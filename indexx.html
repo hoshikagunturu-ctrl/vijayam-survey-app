@@ -1,0 +1,1740 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Health & Hygiene Survey — Vijayam Institute of Technology</title>
+<script src="https://sdk.amazonaws.com/js/aws-sdk-2.1467.0.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --g1:#0b3d20;--g2:#145a32;--g3:#1e8449;--g4:#27ae60;--g5:#58d68d;--g6:#eafaf1;--g7:#d5f5e3;
+  --amber:#b7770d;--amber-bg:#fef9e7;--amber-border:#f9e79f;
+  --red:#922b21;--red-bg:#fdedec;--red-border:#f5b7b1;
+  --blue:#1a5276;--blue-bg:#eaf2ff;--blue-border:#a9cce3;
+  --text:#1a1a2e;--muted:#5d6d7e;--light:#aab7b8;
+  --card:#fff;--bg:#f0f5f1;--border:#d5e8d4;
+  --radius:16px;--radius-sm:10px;--radius-xs:7px;
+  --shadow:0 2px 20px rgba(11,61,32,0.08);--shadow-lg:0 8px 40px rgba(11,61,32,0.14);
+}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+
+/* ══ AUTH ══ */
+#authWrap{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px;overflow-y:auto}
+.auth-bg{position:absolute;inset:0}
+.auth-bg-img{position:absolute;inset:0;background:
+  linear-gradient(135deg,rgba(11,61,32,0.95) 0%,rgba(20,90,50,0.9) 40%,rgba(11,61,32,0.95) 100%),
+  url('https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=1400&q=80') center/cover no-repeat;
+}
+.auth-bg-overlay{position:absolute;inset:0;background:radial-gradient(ellipse at 30% 50%,rgba(39,174,96,.2) 0%,transparent 70%)}
+.auth-particles{position:absolute;inset:0;overflow:hidden;pointer-events:none}
+.auth-particles span{position:absolute;border-radius:50%;background:rgba(255,255,255,.06);animation:float 8s ease-in-out infinite}
+.auth-particles span:nth-child(1){width:80px;height:80px;top:15%;left:10%;animation-delay:0s}
+.auth-particles span:nth-child(2){width:50px;height:50px;top:70%;left:5%;animation-delay:2s}
+.auth-particles span:nth-child(3){width:120px;height:120px;top:20%;right:8%;animation-delay:1s}
+.auth-particles span:nth-child(4){width:40px;height:40px;top:60%;right:15%;animation-delay:3s}
+.auth-particles span:nth-child(5){width:70px;height:70px;top:80%;left:40%;animation-delay:1.5s}
+@keyframes float{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-20px) scale(1.05)}}
+.auth-box{background:rgba(255,255,255,.97);border-radius:24px;padding:38px 32px;width:100%;max-width:430px;box-shadow:0 32px 80px rgba(0,0,0,.35);position:relative;z-index:1;backdrop-filter:blur(12px)}
+.auth-logo{text-align:center;margin-bottom:24px}
+.auth-icon{width:64px;height:64px;border-radius:20px;background:linear-gradient(135deg,var(--g1),var(--g3));display:flex;align-items:center;justify-content:center;font-size:30px;margin:0 auto 12px;box-shadow:0 10px 28px rgba(11,61,32,.3);position:relative;overflow:hidden}
+.auth-icon::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.15),transparent)}
+.auth-logo h2{font-family:'Playfair Display',serif;font-size:19px;font-weight:700;color:var(--g1);line-height:1.3}
+.auth-logo p{font-size:11px;color:var(--muted);margin-top:3px}
+.atoggle{display:flex;background:#f0f5f0;border-radius:12px;padding:4px;margin-bottom:20px;gap:4px}
+.atb{flex:1;padding:9px;border:none;background:none;border-radius:9px;font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;color:var(--muted);transition:all .2s}
+.atb.active{background:#fff;color:var(--g1);box-shadow:0 2px 10px rgba(0,0,0,.12);font-weight:600}
+.afield{margin-bottom:13px}
+.afield label{display:block;font-size:11.5px;font-weight:600;color:var(--text);margin-bottom:5px;display:flex;align-items:center;gap:5px}
+.afield label .lsub{font-weight:400;color:var(--muted);font-size:10.5px}
+.ainp-wrap{position:relative}
+.afield input{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:13px;font-family:'DM Sans',sans-serif;background:#fafffe;color:var(--text);outline:none;transition:all .2s}
+.afield input:focus{border-color:var(--g3);background:#fff;box-shadow:0 0 0 3px rgba(30,132,73,.08)}
+.afield input.err{border-color:var(--red)}
+.inp-icon{position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:14px;pointer-events:none}
+.ahint{background:var(--amber-bg);border:1px solid var(--amber-border);border-radius:10px;padding:10px 13px;font-size:11px;color:var(--amber);margin-top:8px;line-height:1.75;display:none}
+.aerr{background:var(--red-bg);border:1px solid var(--red-border);color:var(--red);font-size:12px;margin-top:8px;text-align:center;display:none;border-radius:8px;padding:8px 12px}
+.btn-login{width:100%;padding:13px;background:linear-gradient(135deg,var(--g1),var(--g3));color:#fff;border:none;border-radius:var(--radius-sm);font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;margin-top:10px;transition:all .2s;box-shadow:0 6px 22px rgba(11,61,32,.3);letter-spacing:.2px}
+.btn-login:hover{transform:translateY(-1px);box-shadow:0 10px 30px rgba(11,61,32,.4)}
+.btn-login:active{transform:translateY(0)}
+.adivider{text-align:center;font-size:11px;color:var(--light);margin:14px 0;position:relative}
+.adivider::before,.adivider::after{content:'';position:absolute;top:50%;width:38%;height:1px;background:var(--border)}
+.adivider::before{left:0}.adivider::after{right:0}
+.google-btn{width:100%;padding:11px;border:1.5px solid var(--border);border-radius:var(--radius-sm);background:#fff;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);display:flex;align-items:center;justify-content:center;gap:9px;transition:all .18s}
+.google-btn:hover{background:var(--g6);border-color:var(--g3)}
+.auth-footer-note{text-align:center;font-size:10.5px;color:var(--light);margin-top:12px;line-height:1.6}
+
+/* ══ HEADER ══ */
+.site-header{background:linear-gradient(155deg,var(--g1) 0%,var(--g2) 50%,#1a6b3a 100%);color:#fff;position:relative;overflow:hidden}
+.hbg{position:absolute;inset:0;pointer-events:none}
+.hbg-img{position:absolute;inset:0;background:url('https://images.unsplash.com/photo-1559825481-12a05cc00344?w=1400&q=60') center/cover no-repeat;opacity:.07}
+.hbg-circles{position:absolute;inset:0}
+.hbg-circles::before{content:'';position:absolute;width:400px;height:400px;border-radius:50%;border:1px solid rgba(255,255,255,.07);top:-120px;right:-80px}
+.hbg-circles::after{content:'';position:absolute;width:250px;height:250px;border-radius:50%;border:1px solid rgba(255,255,255,.05);bottom:-80px;left:60px}
+.hinner{position:relative;padding:22px 28px 0}
+.hrow{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.vit-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);padding:3px 12px;border-radius:20px;font-size:9.5px;font-weight:600;letter-spacing:.9px;text-transform:uppercase;margin-bottom:9px}
+.htitle{font-family:'Playfair Display',serif;font-size:clamp(17px,2.4vw,24px);font-weight:700;line-height:1.25;margin-bottom:3px}
+.htitle span{display:block;font-size:clamp(12px,1.7vw,17px);font-weight:400;opacity:.78;font-family:'DM Sans',sans-serif}
+.hmeta{font-size:11px;opacity:.55;margin-bottom:8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.htags{display:flex;gap:5px;flex-wrap:wrap;margin-top:5px}
+.htag{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);padding:3px 10px;border-radius:14px;font-size:10.5px}
+.hright{text-align:right}
+.team-lbl{font-size:9px;text-transform:uppercase;letter-spacing:1.6px;opacity:.5;margin-bottom:6px}
+.tpills{display:flex;gap:5px;justify-content:flex-end;flex-wrap:wrap}
+.tpill{background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.25);padding:3px 10px;border-radius:13px;font-size:11px}
+.tpill.lead{background:rgba(255,215,80,.2);border-color:rgba(255,215,80,.4);color:#ffe866;font-weight:600}
+#userChip{display:none;align-items:center;gap:7px;background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:5px 13px 5px 5px;cursor:pointer;margin-top:9px;justify-content:flex-end;transition:background .18s}
+#userChip:hover{background:rgba(255,255,255,.2)}
+.uc-av{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--g3),var(--g5));display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff}
+.uc-name{font-size:11.5px;color:#fff;font-weight:500}
+.uc-role{font-size:9.5px;color:rgba(255,255,255,.5);margin-left:2px}
+
+/* ══ TICKER ══ */
+.ticker{background:rgba(0,0,0,.22);padding:9px 28px;overflow:hidden;margin-top:16px}
+.ticker-inner{display:flex;align-items:center;gap:12px}
+.ticker-lbl{font-size:10px;font-weight:700;letter-spacing:1.6px;text-transform:uppercase;color:#ffd966;white-space:nowrap;flex-shrink:0;display:flex;align-items:center;gap:5px}
+.ticker-dot{width:6px;height:6px;border-radius:50%;background:#ffd966;animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.ticker-track{overflow:hidden;flex:1}
+.ticker-scroll{display:flex;gap:10px;white-space:nowrap;animation:tickX 30s linear infinite}
+@keyframes tickX{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+.ticker-item{background:rgba(255,214,102,.13);border:1px solid rgba(255,214,102,.26);color:#ffd966;padding:2px 11px;border-radius:16px;font-size:11px;white-space:nowrap}
+
+/* ══ NAV TABS ══ */
+.nav-wrap{background:#fff;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:200;box-shadow:0 2px 12px rgba(11,61,32,.07)}
+.nav-tabs{display:flex;overflow-x:auto;padding:0 24px;scrollbar-width:none}
+.nav-tabs::-webkit-scrollbar{display:none}
+.ntab{padding:13px 15px;font-size:12px;font-weight:500;color:var(--muted);border:none;background:none;cursor:pointer;border-bottom:2.5px solid transparent;white-space:nowrap;font-family:'DM Sans',sans-serif;transition:all .18s;flex-shrink:0}
+.ntab:hover{color:var(--g2)}
+.ntab.active{color:var(--g1);border-bottom-color:var(--g3);font-weight:600}
+.ntab.admin-t{color:var(--red)}
+.ntab.admin-t.active{border-bottom-color:var(--red);color:var(--red)}
+
+/* ══ LAYOUT ══ */
+.layout{display:grid;grid-template-columns:220px 1fr;min-height:calc(100vh - 195px)}
+.sidebar{background:#fff;border-right:1px solid var(--border);padding:18px 14px;position:sticky;top:47px;height:calc(100vh - 47px);overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--border) transparent}
+.sb-title{font-size:9px;text-transform:uppercase;letter-spacing:1.8px;color:var(--light);font-weight:700;margin-bottom:8px;padding-left:4px}
+.sb-sec{margin-bottom:20px}
+.sbnav{display:flex;flex-direction:column;gap:2px}
+.sbn{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:var(--radius-sm);font-size:12px;color:var(--muted);cursor:pointer;border:none;background:none;font-family:'DM Sans',sans-serif;text-align:left;transition:all .15s;width:100%}
+.sbn:hover{background:var(--g6);color:var(--g1)}
+.sbn.active{background:var(--g6);color:var(--g1);font-weight:600}
+.sbn-ic{font-size:14px;width:18px;text-align:center;flex-shrink:0}
+.mini-stats{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.mstat{background:var(--bg);border-radius:var(--radius-sm);padding:10px;text-align:center;border:1px solid var(--border)}
+.mstat-n{font-size:20px;font-weight:700;color:var(--g2);display:block;font-family:'Playfair Display',serif}
+.mstat-l{font-size:10px;color:var(--light);display:block;margin-top:1px}
+.vill-card{background:linear-gradient(135deg,var(--g1),var(--g2));border-radius:var(--radius-sm);padding:13px;color:#fff;margin-bottom:4px;position:relative;overflow:hidden}
+.vill-card::before{content:'';position:absolute;inset:0;background:url('https://images.unsplash.com/photo-1577587230708-187fdbef4d91?w=400&q=60') center/cover;opacity:.1}
+.vc-name{font-size:13px;font-weight:600;margin-bottom:2px;position:relative}
+.vc-sub{font-size:10px;opacity:.65;position:relative}
+.vc-tag{display:inline-block;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);border-radius:10px;font-size:9.5px;padding:2px 8px;margin-top:7px;position:relative}
+
+/* ══ CONTENT ══ */
+.content{padding:22px 26px;overflow-y:auto;max-width:960px}
+.panel{display:none}.panel.active{display:block;animation:fadeUp .28s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+/* ══ PAGE HERO ══ */
+.phero{background:linear-gradient(135deg,#fff 0%,var(--g6) 100%);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:16px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.phero::after{content:'';position:absolute;right:-20px;top:-20px;width:140px;height:140px;border-radius:50%;background:rgba(39,174,96,.07)}
+.phero h2{font-family:'Playfair Display',serif;font-size:21px;font-weight:700;color:var(--g1);margin-bottom:3px}
+.phero p{font-size:12.5px;color:var(--muted);line-height:1.6}
+.week-chip{display:inline-flex;align-items:center;gap:5px;background:var(--g6);border:1px solid var(--g7);color:var(--g2);padding:3px 12px;border-radius:14px;font-size:11px;font-weight:600;margin-top:8px}
+
+/* ══ KEY PROBLEMS ══ */
+.kpbox{background:linear-gradient(135deg,var(--amber-bg),#fffde7);border:1px dashed var(--amber-border);border-radius:var(--radius);padding:15px 17px;margin-bottom:16px;display:none}
+.kpbox.has-items{display:block}
+.kpbox-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:6px}
+.kpbox-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--amber);display:flex;align-items:center;gap:6px}
+.kpbox-sub{font-size:10.5px;color:#c09a40;font-style:italic}
+.kptags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.kptag{display:inline-flex;align-items:center;gap:5px;background:#fff;border:1px solid var(--amber-border);color:var(--amber);padding:4px 11px;border-radius:12px;font-size:11.5px}
+.kptag button{background:none;border:none;cursor:pointer;color:#c0a060;font-size:14px;line-height:1;padding:0}
+.kpadd{display:flex;gap:7px}
+.kpi{flex:1;padding:8px 11px;border:1px solid var(--amber-border);border-radius:var(--radius-xs);font-size:12px;font-family:'DM Sans',sans-serif;background:#fff;color:var(--text);outline:none;min-width:0;transition:border-color .2s}
+.kpi:focus{border-color:var(--amber)}
+.kpbtn{padding:8px 16px;background:var(--amber);color:#fff;border:none;border-radius:var(--radius-xs);font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap}
+
+/* ══ DUPLICATE WARNING ══ */
+.dup-warn{background:var(--red-bg);border:1px solid var(--red-border);border-radius:var(--radius);padding:16px 18px;margin-bottom:14px;display:flex;align-items:flex-start;gap:12px}
+.dup-warn-icon{font-size:24px;flex-shrink:0}
+.dup-warn h4{font-size:14px;font-weight:600;color:var(--red);margin-bottom:3px}
+.dup-warn p{font-size:12px;color:var(--red);opacity:.8;line-height:1.5}
+.dup-warn-hidden{display:none}
+
+/* ══ PERSON PROGRESS ══ */
+.pprow{display:flex;gap:6px;align-items:center;margin-bottom:14px;flex-wrap:wrap}
+.pp-lbl{font-size:12px;color:var(--muted);margin-right:4px;white-space:nowrap}
+.ppdot{width:34px;height:34px;border-radius:50%;border:1.5px solid var(--border);background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:11.5px;font-weight:600;color:var(--muted);cursor:pointer;transition:all .18s;flex-shrink:0;position:relative}
+.ppdot:hover{border-color:var(--g3);background:var(--g6)}
+.ppdot.active{background:var(--g6);border-color:var(--g3);color:var(--g2)}
+.ppdot.done{background:var(--g3);border-color:var(--g3);color:#fff}
+.ppdot.done::after{content:'✓';font-size:13px}
+.ppdot.done span{display:none}
+.pp-count{font-size:11.5px;color:var(--muted);margin-left:4px}
+
+/* ══ FORM CARD ══ */
+.fcard{background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:18px;margin-bottom:13px;box-shadow:var(--shadow)}
+.fcard-title{font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--g2);margin-bottom:15px;display:flex;align-items:center;gap:7px}
+.fcard-title::before{content:'';width:3px;height:14px;background:linear-gradient(var(--g3),var(--g4));border-radius:2px;flex-shrink:0}
+.igrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:11px}
+.ifield label{display:block;font-size:11px;font-weight:600;color:var(--muted);margin-bottom:4px}
+.ifield input,.ifield select{width:100%;padding:8px 11px;border:1.5px solid var(--border);border-radius:var(--radius-xs);font-size:13px;font-family:'DM Sans',sans-serif;background:#fafffe;color:var(--text);outline:none;transition:border-color .2s}
+.ifield input:focus,.ifield select:focus{border-color:var(--g3)}
+.ifield input[readonly]{background:#f7faf8;opacity:.75;cursor:not-allowed}
+.qlist{display:flex;flex-direction:column}
+.qitem{padding:12px 0;border-bottom:1px solid #f0f5f0;display:flex;gap:10px;align-items:flex-start}
+.qitem:last-child{border-bottom:none}
+.qnum{font-size:11px;font-weight:700;color:var(--g3);min-width:20px;padding-top:2px;flex-shrink:0}
+.qbody{flex:1;min-width:0}
+.qtext{font-size:13px;color:var(--text);margin-bottom:9px;line-height:1.5}
+.qopts{display:flex;flex-wrap:wrap;gap:6px}
+.opt{display:inline-flex;align-items:center;gap:5px;cursor:pointer;padding:6px 13px;border-radius:8px;border:1.5px solid var(--border);background:#fff;transition:all .14s;font-size:12px;color:var(--text);font-family:'DM Sans',sans-serif;white-space:nowrap;user-select:none}
+.opt:hover{border-color:var(--g3);background:var(--g6)}
+.opt input[type=radio]{accent-color:var(--g3);width:12px;height:12px;flex-shrink:0}
+.opt.sel{border-color:var(--g3);background:var(--g6);color:var(--g1);font-weight:500}
+.qother{padding:6px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:12px;font-family:'DM Sans',sans-serif;color:var(--text);background:#fff;outline:none;width:110px}
+.qother:focus{border-color:var(--g3)}
+
+/* ══ BUTTONS ══ */
+.btn-submit{background:linear-gradient(135deg,var(--g1),var(--g3));color:#fff;border:none;padding:12px 28px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;display:inline-flex;align-items:center;gap:7px;box-shadow:0 4px 16px rgba(11,61,32,.28);transition:all .2s}
+.btn-submit:hover{transform:translateY(-1px);box-shadow:0 7px 24px rgba(11,61,32,.36)}
+.btn-ghost{background:#fff;color:var(--g2);border:1.5px solid var(--border);padding:10px 20px;border-radius:var(--radius-sm);font-size:12.5px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background .18s}
+.btn-ghost:hover{background:var(--g6)}
+.form-actions{display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin-top:6px}
+.already-done-box{background:var(--g6);border:1px solid var(--g7);border-radius:var(--radius);padding:18px;margin-bottom:13px;text-align:center}
+.already-done-box h3{font-size:15px;font-weight:700;color:var(--g1);margin-bottom:4px}
+.already-done-box p{font-size:12.5px;color:var(--g2)}
+
+/* ══ GOAL / PROFILE ══ */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin-bottom:16px}
+.stat-card{background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:16px;text-align:center;box-shadow:var(--shadow);transition:transform .18s}
+.stat-card:hover{transform:translateY(-2px)}
+.stat-n{font-size:30px;font-weight:700;color:var(--g2);font-family:'Playfair Display',serif;display:block;line-height:1}
+.stat-l{font-size:11px;color:var(--muted);display:block;margin-top:5px}
+.goal-card{background:linear-gradient(135deg,var(--blue-bg),#f0f8ff);border:1px solid var(--blue-border);border-radius:var(--radius);padding:18px;margin-bottom:14px;position:relative;overflow:hidden}
+.goal-card::before{content:'🎯';position:absolute;right:16px;top:14px;font-size:32px;opacity:.12}
+.goal-title{font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--blue);margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.goal-text{font-size:13px;color:var(--blue);line-height:1.75}
+.goal-badge{display:inline-flex;align-items:center;gap:4px;background:#fff;border:1px solid var(--blue-border);border-radius:10px;padding:3px 12px;font-size:11px;color:var(--blue);margin-top:10px;font-weight:500}
+.att-week-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-bottom:14px}
+.awg{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-xs);padding:10px 4px;text-align:center;font-size:10px;color:var(--muted);transition:all .25s}
+.awg.done{background:linear-gradient(135deg,var(--g6),#d5f5e3);border-color:var(--g4);color:var(--g2)}
+.awg-n{display:block;font-size:22px;font-weight:700;margin-bottom:2px;font-family:'Playfair Display',serif}
+.profile-header{display:flex;align-items:center;gap:14px;margin-bottom:18px;padding-bottom:16px;border-bottom:1px solid var(--border)}
+.prof-av{width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,var(--g3),var(--g5));display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:#fff;box-shadow:0 4px 14px rgba(30,132,73,.3);flex-shrink:0}
+.prof-name{font-size:17px;font-weight:700;color:var(--text)}
+.prof-email{font-size:12px;color:var(--muted);margin-top:2px}
+.prof-role-badge{display:inline-flex;align-items:center;gap:4px;background:var(--g6);border:1px solid var(--border);color:var(--g2);padding:2px 9px;border-radius:10px;font-size:10px;font-weight:600;margin-top:5px}
+.pending-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border)}
+.pending-row:last-child{border-bottom:none}
+.pending-name{font-size:13px;color:var(--text)}
+.btn-fill{padding:7px 15px;background:var(--g6);border:1px solid var(--border);color:var(--g2);border-radius:var(--radius-xs);font-size:12px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .18s}
+.btn-fill:hover{background:var(--g3);color:#fff;border-color:var(--g3)}
+
+/* ══ STATISTICS ══ */
+.chart-sec{background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:14px;box-shadow:var(--shadow)}
+.chart-title{font-size:13px;font-weight:700;color:var(--text);margin-bottom:16px;display:flex;align-items:center;gap:7px}
+.chart-title-icon{width:28px;height:28px;border-radius:8px;background:var(--g6);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.charts-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.chart-canvas-wrap{background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow)}
+.outcome{background:var(--g6);border-radius:var(--radius-xs);padding:12px 15px;margin-top:12px;border-left:3px solid var(--g3)}
+.outcome-title{font-size:11.5px;font-weight:700;color:var(--g1);margin-bottom:4px}
+.outcome-text{font-size:12px;color:var(--g2);line-height:1.7}
+.bar-row{display:flex;align-items:center;gap:10px;margin-bottom:9px}
+.bar-lbl{font-size:12px;color:var(--muted);min-width:150px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar-track{flex:1;height:10px;background:var(--bg);border-radius:5px;overflow:hidden}
+.bar-fill{height:100%;border-radius:5px;transition:width .8s ease}
+.bar-good{background:linear-gradient(90deg,var(--g3),var(--g5))}
+.bar-mid{background:linear-gradient(90deg,#e6ac1a,#f0c040)}
+.bar-bad{background:linear-gradient(90deg,#c0392b,#e74c3c)}
+.bar-val{font-size:12px;font-weight:600;color:var(--text);min-width:34px;text-align:right}
+.prog-bar-wrap{background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;margin-bottom:14px;box-shadow:var(--shadow)}
+.prog-bar-lbl{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:8px;align-items:center}
+.prog-bar-lbl span:first-child{font-weight:600;color:var(--text);font-size:13px}
+.prog-track{height:10px;background:var(--bg);border-radius:5px;overflow:hidden}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--g3),var(--g5));border-radius:5px;transition:width 1s ease}
+
+/* ══ ADMIN ══ */
+.admin-hero{background:linear-gradient(135deg,#1a0a0a,var(--red));color:#fff;border-radius:var(--radius);padding:22px;margin-bottom:16px;position:relative;overflow:hidden}
+.admin-hero::before{content:'';position:absolute;inset:0;background:url('https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=800&q=60') center/cover;opacity:.07}
+.admin-hero h3{font-family:'Playfair Display',serif;font-size:18px;margin-bottom:4px;position:relative}
+.admin-hero p{font-size:12px;opacity:.72;margin-bottom:14px;position:relative}
+.rbtns{display:flex;gap:8px;flex-wrap:wrap;position:relative}
+.rbtn{background:#fff;color:var(--g1);border:none;padding:9px 18px;border-radius:var(--radius-xs);font-size:12.5px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;display:inline-flex;align-items:center;gap:6px;transition:all .18s}
+.rbtn:hover{background:var(--g6);transform:translateY(-1px)}
+.rbtn.rbtn-red{color:var(--red)}
+.admin-stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-bottom:16px}
+.astat{background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow);transition:transform .18s}
+.astat:hover{transform:translateY(-2px)}
+.astat-n{font-size:30px;font-weight:700;color:var(--g2);font-family:'Playfair Display',serif;display:block;line-height:1}
+.astat-l{font-size:11.5px;color:var(--muted);margin-top:4px}
+.tbl-wrap{background:#fff;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);margin-bottom:14px}
+.tbl-hdr{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.tbl-hdr-title{font-size:13.5px;font-weight:700;color:var(--text)}
+.search-inp{padding:7px 12px;border:1.5px solid var(--border);border-radius:var(--radius-xs);font-size:12.5px;font-family:'DM Sans',sans-serif;outline:none;color:var(--text);transition:border-color .2s;min-width:180px}
+.search-inp:focus{border-color:var(--g3)}
+.dtbl{width:100%;border-collapse:collapse;font-size:12.5px}
+.dtbl th{text-align:left;padding:9px 13px;font-size:10px;text-transform:uppercase;letter-spacing:1.1px;color:var(--light);border-bottom:1.5px solid var(--border);font-weight:700;background:#fafff9}
+.dtbl td{padding:9px 13px;border-bottom:1px solid #f3f7f3;color:var(--text);vertical-align:middle}
+.dtbl tr:hover td{background:#f8fdf8}
+.dtbl tr:last-child td{border-bottom:none}
+.sbadge{padding:3px 10px;border-radius:12px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+.sb-p{background:var(--amber-bg);color:var(--amber)}
+.sb-a{background:var(--g6);color:var(--g2)}
+.sb-f{background:var(--red-bg);color:var(--red)}
+.tact{background:none;border:1px solid var(--border);cursor:pointer;font-size:11.5px;font-family:'DM Sans',sans-serif;color:var(--muted);padding:4px 9px;border-radius:6px;transition:all .15s;margin-right:4px}
+.tact:hover{background:var(--g6);color:var(--g1);border-color:var(--g3)}
+.tact.del:hover{background:var(--red-bg);color:var(--red);border-color:var(--red)}
+.btn-danger{padding:8px 15px;background:var(--red-bg);border:1px solid var(--red-border);color:var(--red);border-radius:var(--radius-xs);font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .18s}
+.btn-danger:hover{background:var(--red);color:#fff}
+
+/* ══ RESPONSE MODAL ══ */
+.rmodal-overlay{position:fixed;inset:0;background:rgba(11,61,32,.55);z-index:10000;display:flex;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(4px);animation:fadeIn .2s ease}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.rmodal{background:#fff;border-radius:20px;width:100%;max-width:620px;max-height:88vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 32px 80px rgba(0,0,0,.3);animation:slideUp .25s ease}
+@keyframes slideUp{from{transform:translateY(30px);opacity:0}to{transform:translateY(0);opacity:1}}
+.rmodal-head{padding:18px 22px;background:linear-gradient(135deg,var(--g1),var(--g2));color:#fff;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-shrink:0}
+.rmodal-head-info h3{font-family:'Playfair Display',serif;font-size:17px;font-weight:700;margin-bottom:3px}
+.rmodal-head-info p{font-size:11px;opacity:.72;line-height:1.6}
+.rmodal-close{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);color:#fff;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .15s}
+.rmodal-close:hover{background:rgba(255,255,255,.28)}
+.rmodal-meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.rmodal-badge{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:10px;padding:2px 10px;font-size:10.5px}
+.rmodal-body{padding:18px 22px;overflow-y:auto;flex:1}
+.rmodal-section-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--light);margin:14px 0 8px;padding-bottom:5px;border-bottom:1px solid var(--border)}
+.rqa{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid #f3f7f3}
+.rqa:last-child{border-bottom:none}
+.rqa-num{font-size:11px;font-weight:700;color:var(--g4);min-width:20px;padding-top:1px;flex-shrink:0}
+.rqa-q{font-size:12.5px;color:var(--muted);line-height:1.45;margin-bottom:5px}
+.rqa-a{display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:8px;font-size:12.5px;font-weight:600}
+.rqa-a.good{background:var(--g6);color:var(--g1);border:1px solid var(--g7)}
+.rqa-a.bad{background:var(--red-bg);color:var(--red);border:1px solid var(--red-border)}
+.rqa-a.neutral{background:var(--blue-bg);color:var(--blue);border:1px solid var(--blue-border)}
+.rmodal-foot{padding:13px 22px;border-top:1px solid var(--border);background:#fafff9;display:flex;gap:8px;justify-content:flex-end;flex-shrink:0}
+
+/* ══ TOAST ══ */
+#toast{position:fixed;bottom:24px;right:24px;background:var(--g1);color:#fff;padding:12px 18px;border-radius:14px;font-size:13px;font-weight:500;box-shadow:0 10px 30px rgba(11,61,32,.45);z-index:99999;transform:translateY(60px);opacity:0;transition:all .32s cubic-bezier(.34,1.56,.64,1);display:flex;align-items:center;gap:8px;max-width:320px;pointer-events:none}
+#toast.show{transform:translateY(0);opacity:1}
+
+/* ══ WEEK NOTE ══ */
+.week-note{font-size:12px;color:var(--blue);padding:9px 13px;background:var(--blue-bg);border-radius:8px;border-left:3px solid var(--blue);margin-top:4px}
+
+/* ══ SCROLLBAR ══ */
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:10px}
+
+/* ══ RESPONSIVE ══ */
+@media(max-width:720px){
+  .layout{grid-template-columns:1fr}
+  .sidebar{display:none}
+  .content{padding:14px 16px}
+  .hinner{padding:16px 16px 0}
+  .charts-grid{grid-template-columns:1fr}
+  .igrid{grid-template-columns:1fr 1fr}
+  .auth-box{padding:28px 20px}
+}
+</style>
+</head>
+<body>
+
+<!-- ══ AUTH ══ -->
+<div id="authWrap">
+  <div class="auth-bg">
+    <div class="auth-bg-img"></div>
+    <div class="auth-bg-overlay"></div>
+    <div class="auth-particles">
+      <span></span><span></span><span></span><span></span><span></span>
+    </div>
+  </div>
+  <div class="auth-box">
+    <div class="auth-logo">
+      <div class="auth-icon">🌿</div>
+      <h2>Health &amp; Hygiene Survey</h2>
+      <p>Vijayam Institute of Technology · Sanjeevanayuni Vooru</p>
+    </div>
+    <div class="atoggle">
+      <button class="atb active" onclick="setMode('user')" id="mUser">👤 Villager / Student</button>
+      <button class="atb" onclick="setMode('admin')" id="mAdmin">👑 Admin</button>
+    </div>
+    <div class="afield">
+      <label>Full Name</label>
+      <input id="lName" type="text" placeholder="Enter your full name" oninput="onNameInput()">
+    </div>
+    <div id="surveyBanner" style="display:none;margin-bottom:10px;border-radius:9px;padding:10px 13px;font-size:12px;font-weight:500;text-align:center"></div>
+    <div class="afield">
+      <label>Email Address <span class="lsub">*any valid email accepted</span></label>
+      <div class="ainp-wrap">
+        <input id="lEmail" type="email" placeholder="your@email.com" oninput="onEmailInput(this)">
+        <span class="inp-icon" id="emailTick" style="display:none">✅</span>
+      </div>
+    </div>
+    <div class="afield">
+      <label>Password <span class="lsub">(min 4 characters)</span></label>
+      <div class="ainp-wrap">
+        <input id="lPass" type="password" placeholder="••••••••" style="padding-right:40px">
+        <button onclick="togglePass()" type="button" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:14px;color:var(--muted)">👁</button>
+      </div>
+    </div>
+    <div id="adminField" style="display:none">
+      <div class="afield">
+        <label>Admin Code</label>
+        <input id="lCode" type="password" placeholder="Enter admin access code">
+      </div>
+    </div>
+    <div class="ahint" id="authHint">
+      🔐 Admin credentials — Email: <strong>admin@vijayamit.com</strong> &nbsp;|&nbsp; Password: <strong>Hoshika@2024</strong> &nbsp;|&nbsp; Code: <strong>Panchayat2024</strong>
+    </div>
+    <p class="aerr" id="aerr"></p>
+    <button class="btn-login" onclick="doLogin()">Sign In →</button>
+    <div class="adivider">or sign in with Google</div>
+    <button class="google-btn" onclick="doGuest()">
+      <svg width="16" height="16" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20H24v8h11.3C33.6 32.7 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.1 8 2.9l5.7-5.7C34.5 7.1 29.6 5 24 5 12.9 5 4 13.9 4 25s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.6-.4-3.9z"/><path fill="#FF3D00" d="M6.3 15.7l6.6 4.8C14.5 17 19 14 24 14c3.1 0 5.8 1.1 8 2.9l5.7-5.7C34.5 8.1 29.6 6 24 6 16.3 6 9.6 9.9 6.3 15.7z"/><path fill="#4CAF50" d="M24 46c5.5 0 10.5-2.1 14.2-5.5L31.6 35C29.7 36.3 27 37 24 37c-5.3 0-9.6-3.3-11.3-8H6v6C9.6 41.8 16.4 46 24 46z"/><path fill="#1976D2" d="M44 25c0-1.3-.1-2.6-.4-3.9H24v8h11.3c-.8 2.2-2.3 4.2-4.2 5.5l6.6 5.6C40.9 36.9 44 31.4 44 25z"/></svg>
+      Continue with Google
+    </button>
+    <div class="auth-footer-note">Secure login · Data stored locally · Privacy protected</div>
+  </div>
+</div>
+
+<!-- ══ APP ══ -->
+<div id="app" style="display:none">
+
+  <!-- HEADER -->
+  <div class="site-header">
+    <div class="hbg">
+      <div class="hbg-img"></div>
+      <div class="hbg-circles"></div>
+    </div>
+    <div class="hinner">
+      <div class="hrow">
+        <div>
+          <div class="vit-badge">🎓 Vijayam Institute of Technology · AICTE · JNTUA</div>
+          <div class="htitle">Community Service Project<span>Health &amp; Hygiene · Sanjeevanayuni Vooru</span></div>
+          <div class="hmeta">
+            <span>📍 Chittoor District, Andhra Pradesh</span>
+            <span style="opacity:.3">·</span>
+            <span>6-Week Survey</span>
+          </div>
+          <div class="htags">
+            <span class="htag">🩺 Health & Hygiene</span>
+            <span class="htag">🏡 Village Survey</span>
+            <span class="htag">📊 6 Weeks</span>
+          </div>
+        </div>
+        <div class="hright">
+          <div class="team-lbl">Project Team</div>
+          <div class="tpills">
+            <span class="tpill lead">👑 Hoshika (Lead)</span>
+            <span class="tpill">Usha Sree</span>
+            <span class="tpill">Trisha</span>
+          </div>
+          <div id="userChip" onclick="logout()">
+            <div class="uc-av" id="ucAv">H</div>
+            <span class="uc-name" id="ucName">User</span>
+            <span class="uc-role" id="ucRole"></span>
+            <span style="font-size:10px;color:rgba(255,255,255,.45);margin-left:4px">· Sign out</span>
+          </div>
+        </div>
+      </div>
+      <div class="ticker">
+        <div class="ticker-inner">
+          <div class="ticker-lbl"><span class="ticker-dot"></span> Key Problems</div>
+          <div class="ticker-track"><div class="ticker-scroll" id="tickerScroll"></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="nav-wrap">
+      <div class="nav-tabs" id="navTabs"></div>
+    </div>
+  </div>
+
+  <!-- LAYOUT -->
+  <div class="layout">
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      <div class="sb-sec">
+        <div class="vill-card">
+          <div class="vc-name">🏡 Sanjeevanayuni Vooru</div>
+          <div class="vc-sub">Chittoor District, Andhra Pradesh</div>
+          <div class="vc-tag">Community Survey 2024–25</div>
+        </div>
+      </div>
+      <div class="sb-sec" id="sideWeekNav">
+        <div class="sb-title">Survey Weeks</div>
+        <div class="sbnav" id="sideWeekList"></div>
+      </div>
+      <div class="sb-sec">
+        <div class="sb-title">My Progress</div>
+        <div class="mini-stats">
+          <div class="mstat"><span class="mstat-n" id="sbMySubs">0</span><span class="mstat-l">My Submissions</span></div>
+          <div class="mstat"><span class="mstat-n" id="sbMyWeeks">0</span><span class="mstat-l">Weeks Done</span></div>
+        </div>
+      </div>
+      <div class="sb-sec" id="adminSideStats" style="display:none">
+        <div class="sb-title">Village Stats</div>
+        <div class="mini-stats">
+          <div class="mstat"><span class="mstat-n" id="sbTotal">0</span><span class="mstat-l">Total</span></div>
+          <div class="mstat"><span class="mstat-n" id="sbPending">0</span><span class="mstat-l">Pending</span></div>
+        </div>
+      </div>
+      <div class="sb-sec">
+        <div class="sb-title">Institution</div>
+        <div style="font-size:11px;color:var(--muted);line-height:1.9">
+          Vijayam Institute of Technology<br>
+          Affiliated to JNTUA, Anantapuramu<br>
+          Chittoor Dist – 517125<br>
+          📞 08572-256328<br>
+          🌐 www.vijayamit.com
+        </div>
+      </div>
+    </div>
+
+    <!-- CONTENT -->
+    <div class="content" id="contentArea">
+      <div id="weekPanels"></div>
+
+      <!-- MY PROFILE (panel 6) -->
+      <div class="panel" id="p6">
+        <div class="phero">
+          <h2>👤 My Profile &amp; Goals</h2>
+          <p>Your personal survey history, attendance, and personalised health improvement goals.</p>
+        </div>
+        <div class="fcard" id="profileCard"></div>
+        <div class="fcard" id="pendingCard" style="display:none">
+          <div class="fcard-title">⏳ Pending Weeks — Please Complete</div>
+          <p style="font-size:12.5px;color:var(--muted);margin-bottom:12px">Complete these weeks to help your community and unlock your full health goal.</p>
+          <div id="pendingList"></div>
+        </div>
+      </div>
+
+      <!-- STATISTICS (panel 7) — admin only -->
+      <div class="panel" id="p7">
+        <div class="phero">
+          <h2>📊 Village Health Statistics</h2>
+          <p>Advanced analytics and visual insights from all survey submissions across all 6 weeks.</p>
+        </div>
+        <div id="globalStats"></div>
+        <div id="statsContent"></div>
+      </div>
+
+      <!-- ADMIN (panel 8) -->
+      <div class="panel" id="p8">
+        <div class="phero">
+          <h2>🔐 Admin Dashboard</h2>
+          <p>Review all submissions, manage data, and generate the Panchayat Secretary report.</p>
+        </div>
+        <div class="admin-stats" id="adminStatCards"></div>
+        <div class="admin-hero">
+          <h3>📄 Panchayat Secretary Report</h3>
+          <p>Compile all 6 weeks of survey data into a formal report for Sanjeevanayuni Vooru Panchayat.</p>
+          <div class="rbtns">
+            <button class="rbtn" onclick="genReport()">📋 Generate Report</button>
+            <button class="rbtn" onclick="exportCSV()">📥 Export CSV</button>
+            <button class="rbtn" onclick="toast('✉️ Report sent to Panchayat Secretary!')">✉️ Send to Secretary</button>
+          </div>
+        </div>
+        <div class="tbl-wrap">
+          <div class="tbl-hdr">
+            <span class="tbl-hdr-title">All Submissions</span>
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+              <input class="search-inp" id="searchInp" placeholder="🔍 Search by name..." oninput="renderAdminTable()">
+              <select id="filterWeek" onchange="renderAdminTable()" style="padding:7px 10px;border:1.5px solid var(--border);border-radius:var(--radius-xs);font-size:12px;font-family:'DM Sans',sans-serif;outline:none;color:var(--text)">
+                <option value="">All Weeks</option>
+                <option value="0">Week 1</option><option value="1">Week 2</option><option value="2">Week 3</option>
+                <option value="3">Week 4</option><option value="4">Week 5</option><option value="5">Week 6</option>
+              </select>
+              <button class="btn-danger" onclick="clearAll()">🗑 Clear All</button>
+            </div>
+          </div>
+          <div style="overflow-x:auto">
+            <table class="dtbl">
+              <thead><tr><th>#</th><th>Name</th><th>Week</th><th>Age/Gender</th><th>Submitted</th><th>Submitted By</th><th>Status</th><th>Actions</th></tr></thead>
+              <tbody id="subTbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<!-- ══ RESPONSE MODAL ══ -->
+<div id="responseModal" style="display:none" class="rmodal-overlay" onclick="closeResponseModal(event)">
+  <div class="rmodal">
+    <div class="rmodal-head">
+      <div class="rmodal-head-info">
+        <h3 id="rmodName">—</h3>
+        <p id="rmodMeta">—</p>
+        <div class="rmodal-meta" id="rmodBadges"></div>
+      </div>
+      <button class="rmodal-close" onclick="document.getElementById('responseModal').style.display='none'">✕</button>
+    </div>
+    <div class="rmodal-body" id="rmodBody"></div>
+    <div class="rmodal-foot">
+      <button class="tact" id="rmodPrevBtn" onclick="rmodNav(-1)">← Prev</button>
+      <span id="rmodNavLabel" style="font-size:11px;color:var(--muted);align-self:center"></span>
+      <button class="tact" id="rmodNextBtn" onclick="rmodNav(1)">Next →</button>
+      <button class="btn-submit" style="padding:8px 18px;font-size:12px" onclick="document.getElementById('responseModal').style.display='none'">Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══ CONSTANTS ══
+const ADMIN_EMAIL='admin@vijayamit.com';
+const ADMIN_PASS='Hoshika@2024';
+const ADMIN_CODE='Panchayat2024';
+
+// ══ STATE ══
+let role='',userName='',userEmail='',authMode='user';
+let subs=[];
+let extraKP=[[],[],[],[],[],[]];
+let charts={};
+
+// ══ DATA ══
+const weekTitles=['Personal Hygiene Practices','Sanitation & Waste Management','Health Awareness','Village Cleanliness & Waste','Nutrition & Healthy Food','Health Awareness & Disease Prevention'];
+const weekIcons=['🧼','🚽','🩺','🏡','🥗','😷'];
+const goals=[
+  'Start washing hands with soap before every meal and after using the toilet — this single habit prevents most diseases.',
+  'Ensure all household waste goes into a dustbin only. Encourage every family member to use the toilet at all times.',
+  'Boil or filter your drinking water every single day. Clean water prevents water-borne diseases effectively.',
+  'Stop burning plastic — collect it separately and request proper disposal. Sweep daily around your house.',
+  'Add at least one fruit or green leafy vegetable to every meal. Reduce junk food intake significantly.',
+  'Get a basic first aid kit at home. Clean any stagnant water near your house to prevent mosquito breeding.'
+];
+
+const weekQs=[
+  [{q:'How often do you wash your hands before eating?',opts:['Always','Sometimes','Never'],good:'Always'},
+   {q:'Do you wash your hands after using the toilet?',opts:['Always','Sometimes','Never'],good:'Always'},
+   {q:'How many times do you brush your teeth in a day?',opts:['Once','Twice','Rarely'],good:'Twice'},
+   {q:'Do you take a bath regularly?',opts:['Daily','Sometimes','Rarely'],good:'Daily'},
+   {q:'Do you keep your nails clean and trimmed?',opts:['Yes','Sometimes','No'],good:'Yes'},
+   {q:'Do you wear clean clothes daily?',opts:['Yes','Sometimes','No'],good:'Yes'},
+   {q:'Do you cover food to protect it from dust and flies?',opts:['Yes','Sometimes','No'],good:'Yes'},
+   {q:'Do you drink clean or boiled water?',opts:['Yes','No'],good:'Yes'},
+   {q:'Do you think personal hygiene is important for good health?',opts:['Yes','No'],good:'Yes'}],
+  [{q:'Do you have a toilet at your home?',opts:['Yes','No'],good:'Yes'},
+   {q:'Do all family members use it regularly?',opts:['Yes','No'],good:'Yes'},
+   {q:'Where do you throw your daily household waste?',opts:['Dustbin','Open area','Roadside'],good:'Dustbin'},
+   {q:'Is there a garbage collection service in your village?',opts:['Yes','No'],good:'Yes'},
+   {q:'Do you see garbage in open places near your house?',opts:['Often','Sometimes','Never'],good:'Never'},
+   {q:'Do you use a covered dustbin at home?',opts:['Yes','No'],good:'Yes'},
+   {q:'Do you think your surroundings are clean?',opts:['Yes','No'],good:'Yes'},
+   {q:'Have you received any sanitation awareness?',opts:['Yes','No'],good:'Yes'},
+   {q:'Are you willing to keep your village clean?',opts:['Yes','No'],good:'Yes'}],
+  [{q:'What is the main source of drinking water at home?',opts:['Borewell','Tap water','Tanker'],other:true},
+   {q:'Do you boil or filter drinking water before use?',opts:['Yes','No'],good:'Yes'},
+   {q:'Do you clean your water storage containers regularly?',opts:['Yes','No'],good:'Yes'},
+   {q:'Do you wash fruits and vegetables before eating?',opts:['Always','Sometimes','Never'],good:'Always'},
+   {q:'Do children in your house follow handwashing habits?',opts:['Yes','Sometimes','No'],good:'Yes'},
+   {q:'Do you cover food to protect it from dust and flies?',opts:['Yes','No'],good:'Yes'},
+   {q:'Do you face mosquito problems near your house?',opts:['Yes','No'],good:'No'},
+   {q:'Are there drainage facilities in your area?',opts:['Yes','No'],good:'Yes'},
+   {q:'Do you think hygiene awareness programs are necessary?',opts:['Yes','No'],good:'Yes'},
+   {q:'Would you like to participate in village cleanliness activities?',opts:['Yes','No'],good:'Yes'}],
+  [{q:'How often do you sweep and clean your house surroundings?',opts:['Daily','Weekly','Rarely'],good:'Daily'},
+   {q:'Do you separate wet waste and dry waste at home?',opts:['Yes','No'],good:'Yes'},
+   {q:'What do you usually do with plastic waste?',opts:['Burn','Throw away','Reuse'],good:'Reuse'},
+   {q:'Are public places in your village kept clean?',opts:['Yes','Sometimes','No'],good:'Yes'},
+   {q:'Do you use separate bins for different types of waste?',opts:['Yes','No'],good:'Yes'},
+   {q:'How often are drains cleaned in your area?',opts:['Regularly','Sometimes','Never'],good:'Regularly'},
+   {q:'Do you think cleanliness helps in preventing diseases?',opts:['Yes','No'],good:'Yes'},
+   {q:'Have you participated in any village cleaning activity?',opts:['Yes','No'],good:'Yes'},
+   {q:'Do you face bad smell or pollution due to garbage?',opts:['Often','Sometimes','Never'],good:'Never'},
+   {q:'How do you suggest maintaining village cleanliness?',opts:['Dustbins','Regular cleaning','Awareness','Waste collection']}],
+  [{q:'How many meals do you eat in a day?',opts:['2','3','More than 3']},
+   {q:'Do you eat fruits regularly?',opts:['Yes','Sometimes','No'],good:'Yes'},
+   {q:'How often do you consume green leafy vegetables?',opts:['Daily','Weekly','Rarely'],good:'Daily'},
+   {q:'Do you drink milk regularly?',opts:['Yes','No'],good:'Yes'},
+   {q:'Do children in your home eat healthy food regularly?',opts:['Yes','Sometimes','No'],good:'Yes'},
+   {q:'How often do you consume junk food?',opts:['Frequently','Sometimes','Rarely'],good:'Rarely'},
+   {q:'Are you aware of the importance of a balanced diet?',opts:['Yes','No'],good:'Yes'},
+   {q:'Do you check the cleanliness of food before eating?',opts:['Always','Sometimes','Never'],good:'Always'},
+   {q:'Do you think healthy food helps prevent diseases?',opts:['Yes','No'],good:'Yes'},
+   {q:'Would you like to know more about healthy eating habits?',opts:['Yes','No'],good:'Yes'}],
+  [{q:'Do you cover your mouth while coughing or sneezing?',opts:['Always','Sometimes','Never'],good:'Always'},
+   {q:'How often do you clean stagnant water around your house?',opts:['Regularly','Sometimes','Never'],good:'Regularly'},
+   {q:'Do you sleep with mosquito protection?',opts:['Mosquito net','Repellent','No protection'],good:'Mosquito net'},
+   {q:'Are first aid materials available in your home?',opts:['Yes','No'],good:'Yes'},
+   {q:'Do you know how diseases spread from person to person?',opts:['Yes','No'],good:'Yes'},
+   {q:'What do you do to prevent mosquito-borne diseases?',opts:['Keep surroundings clean','Use repellents','Nothing'],good:'Keep surroundings clean'},
+   {q:'Do children in your home follow hygienic habits?',opts:['Yes','Sometimes','No'],good:'Yes'},
+   {q:'How often do you disinfect household items?',opts:['Daily','Weekly','Rarely'],good:'Daily'},
+   {q:'Do you avoid eating uncovered food from outside?',opts:['Always','Sometimes','Never'],good:'Always'},
+   {q:'Have you attended any health awareness program?',opts:['Yes','No'],good:'Yes'}]
+];
+
+// ══ HELPERS ══
+function fn(n){return (n||'').trim().split(/\s+/)[0].toLowerCase();}
+function hasSubmittedThisWeek(wi,name){return subs.some(s=>s.wi===wi&&fn(s.name)===fn(name)&&s.submittedBy!=='__admin__');}
+function mySubs(){return subs.filter(s=>s.submittedBy===userEmail);}
+function myWeeks(){return [...new Set(mySubs().map(s=>s.wi))];}
+// ══ AWS CONFIG ══
+AWS.config.region='ap-south-1';
+AWS.config.credentials=new AWS.CognitoIdentityCredentials({
+  IdentityPoolId:'ap-south-1:69d8b1f8-fb7d-4275-a93f-efe427bc0f0d'
+});
+const dynamo=new AWS.DynamoDB.DocumentClient();
+const TABLE='vijayam-surveys';
+
+// Save single entry to DynamoDB
+function saveEntry(entry){
+  return new Promise((resolve,reject)=>{
+    dynamo.put({
+      TableName:TABLE,
+      Item:{
+        id:entry.id,
+        wi:entry.wi,
+        person:entry.person||0,
+        name:entry.name||'',
+        age:entry.age||'',
+        gender:entry.gender||'',
+        contact:entry.contact||'',
+        answers:JSON.stringify(entry.answers||{}),
+        time:entry.time||'',
+        status:entry.status||'Pending',
+        submittedBy:entry.submittedBy||''
+      }
+    },function(err){
+      if(err){console.error('Save error:',err);reject(err);}
+      else resolve();
+    });
+  });
+}
+
+// Delete entry from DynamoDB
+function deleteEntry(id){
+  return new Promise((resolve,reject)=>{
+    dynamo.delete({TableName:TABLE,Key:{id:id}},function(err){
+      if(err){console.error('Delete error:',err);reject(err);}
+      else resolve();
+    });
+  });
+}
+
+// Update status in DynamoDB
+function updateStatus(id,status){
+  return new Promise((resolve,reject)=>{
+    dynamo.update({
+      TableName:TABLE,
+      Key:{id:id},
+      UpdateExpression:'set #s = :s',
+      ExpressionAttributeNames:{'#s':'status'},
+      ExpressionAttributeValues:{':s':status}
+    },function(err){
+      if(err){console.error('Update error:',err);reject(err);}
+      else resolve();
+    });
+  });
+}
+
+// Load all entries from DynamoDB
+function loadFromAWS(){
+  return new Promise((resolve,reject)=>{
+    dynamo.scan({TableName:TABLE},function(err,data){
+      if(err){console.error('Load error:',err);reject(err);}
+      else{
+        const items=(data.Items||[]).map(item=>({
+          id:item.id,
+          wi:item.wi,
+          person:item.person||0,
+          name:item.name||'',
+          age:item.age||'',
+          gender:item.gender||'',
+          contact:item.contact||'',
+          answers:typeof item.answers==='string'?JSON.parse(item.answers||'{}'):item.answers||{},
+          time:item.time||'',
+          status:item.status||'Pending',
+          submittedBy:item.submittedBy||''
+        }));
+        resolve(items);
+      }
+    });
+  });
+}
+
+// save() now saves to localStorage as backup AND DynamoDB
+function save(){
+  try{localStorage.setItem('vit_v9_subs',JSON.stringify(subs));}catch(e){}
+}
+
+// ══ AUTH ══
+function onNameInput(){
+  if(authMode==='admin')return;
+  const raw=document.getElementById('lName').value.trim();
+  const n=fn(raw);
+  const banner=document.getElementById('surveyBanner');
+  if(!n){banner.style.display='none';return;}
+  const matched=subs.filter(s=>fn(s.name)===n);
+  const weeksUsed=[...new Set(matched.map(s=>s.wi+1))].sort((a,b)=>a-b);
+  banner.style.display='block';
+  if(!matched.length){
+    banner.style.cssText='display:block;border-radius:9px;padding:10px 13px;font-size:12px;font-weight:500;text-align:center;margin-bottom:10px;background:#eaf2ff;color:#1a5276;border:1px solid #a9cce3';
+    banner.textContent='👋 New here — no surveys yet. Go ahead and start Week 1!';
+  } else {
+    banner.style.cssText='display:block;border-radius:9px;padding:10px 13px;font-size:12px;font-weight:500;text-align:center;margin-bottom:10px;background:#eafaf1;color:#145a32;border:1px solid #d5e8d4';
+    banner.textContent=`✅ Found ${matched.length} survey${matched.length>1?'s':''} — Week${weeksUsed.length>1?'s':''}: ${weeksUsed.join(', ')}`;
+  }
+}
+function onEmailInput(inp){
+  const tick=document.getElementById('emailTick');
+  const v=inp.value.trim().toLowerCase();
+  const valid=v.includes('@')&&v.includes('.')&&v.length>5;
+  tick.style.display=valid?'inline':'none';
+  if(v.length>5)inp.className=valid?'':'err';
+}
+function togglePass(){const i=document.getElementById('lPass');i.type=i.type==='password'?'text':'password';}
+function setMode(m){
+  authMode=m;
+  document.getElementById('mUser').classList.toggle('active',m==='user');
+  document.getElementById('mAdmin').classList.toggle('active',m==='admin');
+  document.getElementById('adminField').style.display=m==='admin'?'block':'none';
+  document.getElementById('authHint').style.display=m==='admin'?'block':'none';
+  document.getElementById('surveyBanner').style.display='none';
+  document.getElementById('aerr').style.display='none';
+  const emailInp=document.getElementById('lEmail');
+  if(emailInp.value)onEmailInput(emailInp);
+  if(m==='user')onNameInput();
+}
+function showErr(msg){
+  const err=document.getElementById('aerr');
+  err.textContent=msg;err.style.display='block';
+}
+function doLogin(){
+  const n=document.getElementById('lName').value.trim();
+  const e=document.getElementById('lEmail').value.trim().toLowerCase();
+  const p=document.getElementById('lPass').value;
+  document.getElementById('aerr').style.display='none';
+  if(!e||!p){showErr('Please fill in your email and password.');return;}
+  if(!e.includes('@')||!e.includes('.')){showErr('Please enter a valid email address.');return;}
+  if(authMode==='admin'){
+    const c=(document.getElementById('lCode').value||'').trim();
+    if(e===ADMIN_EMAIL&&p===ADMIN_PASS&&c===ADMIN_CODE){
+      loginOk(n||'Admin Hoshika',e,'admin');
+    } else {
+      showErr('Wrong admin credentials. Check the hint above.');
+    }
+  } else {
+    if(p.length<4){showErr('Password must be at least 4 characters.');return;}
+    if(!n){showErr('Please enter your full name.');return;}
+    loginOk(n,e,'user');
+  }
+}
+function doGuest(){
+  const e=document.getElementById('lEmail').value.trim().toLowerCase();
+  const n=document.getElementById('lName').value.trim();
+  if(!e||!e.includes('@')){showErr('Please enter a valid email address first.');return;}
+  if(!n){showErr('Please enter your full name.');return;}
+  loginOk(n,e,'user');
+}
+function loginOk(n,e,r){
+  userName=n;userEmail=e;role=r;
+  document.getElementById('authWrap').style.display='none';
+  document.getElementById('app').style.display='block';
+  const init=(fn(n)||'U')[0].toUpperCase();
+  document.getElementById('ucAv').textContent=init;
+  document.getElementById('ucName').textContent=n;
+  document.getElementById('ucRole').textContent=r==='admin'?'· Admin':'';
+  document.getElementById('userChip').style.display='flex';
+  if(r==='admin')document.getElementById('adminSideStats').style.display='block';
+  buildTabs();
+  buildWeeks();
+  // Show loading indicator
+  toast('⏳ Loading survey data from AWS...');
+  loadFromAWS().then(items=>{
+    subs=items;
+    refreshAll();
+    toast(r==='admin'?'👑 Welcome, Admin Hoshika! ('+items.length+' responses loaded)':'👋 Welcome, '+n+'! ('+items.length+' responses loaded)');
+  }).catch(err=>{
+    console.error('AWS load failed, using localStorage fallback:',err);
+    try{subs=JSON.parse(localStorage.getItem('vit_v9_subs')||'[]');}catch(e){subs=[];}
+    refreshAll();
+    toast('⚠️ Offline mode — showing local data only');
+  });
+}
+function logout(){if(confirm('Sign out?'))location.reload();}
+
+// ══ TABS ══
+function buildTabs(){
+  const nt=document.getElementById('navTabs');
+  const swl=document.getElementById('sideWeekList');
+  if(role==='user'){
+    nt.innerHTML=weekTitles.map((t,i)=>`<button class="ntab${i===0?' active':''}" onclick="goTab(${i},this)">Week ${i+1} · ${t.split(' ').slice(0,2).join(' ')}</button>`).join('')+
+      `<button class="ntab" onclick="goTab(6,this)">👤 My Profile</button>`;
+    swl.innerHTML=weekIcons.map((ic,i)=>`<button class="sbn${i===0?' active':''}" onclick="goTab(${i},document.querySelectorAll('.ntab')[${i}])">${ic} Week ${i+1} · ${weekTitles[i].split(' ').slice(0,2).join(' ')}</button>`).join('');
+  } else {
+    nt.innerHTML=weekTitles.map((t,i)=>`<button class="ntab${i===0?' active':''}" onclick="goTab(${i},this)">W${i+1} · ${t.split(' ').slice(0,2).join(' ')}</button>`).join('')+
+      `<button class="ntab" onclick="goTab(6,this)">👤 Profile</button>`+
+      `<button class="ntab" onclick="goTab(7,this)">📊 Statistics</button>`+
+      `<button class="ntab admin-t" onclick="goTab(8,this)">🔐 Admin</button>`;
+    swl.innerHTML=weekIcons.map((ic,i)=>`<button class="sbn${i===0?' active':''}" onclick="goTab(${i},document.querySelectorAll('.ntab')[${i}])">${ic} Week ${i+1}</button>`).join('');
+  }
+}
+
+// ══ NAV (ID-based, no DOM-index bug) ══
+function goTab(idx,btn){
+  if(idx===7&&role!=='admin'){toast('🔒 Statistics — admin only');return;}
+  if(idx===8&&role!=='admin'){toast('🔒 Admin area — access denied');return;}
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  const target=document.getElementById('p'+idx);
+  if(target)target.classList.add('active');
+  document.querySelectorAll('.ntab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.sbn').forEach(t=>t.classList.remove('active'));
+  if(btn)btn.classList.add('active');
+  if(idx===6)renderProfile();
+  if(idx===7)renderStats();
+  if(idx===8){renderAdminTable();updateAdminNums();}
+}
+
+// ══ BUILD WEEKS ══
+function buildWeeks(){
+  const wrap=document.getElementById('weekPanels');
+  wrap.innerHTML='';
+  for(let wi=0;wi<6;wi++){
+    const d=document.createElement('div');
+    d.className='panel'+(wi===0?' active':'');
+    d.id='p'+wi;
+    d.innerHTML=weekHTML(wi);
+    wrap.appendChild(d);
+  }
+  ['p6','p7','p8'].forEach(id=>{const el=document.getElementById(id);if(el)el.classList.remove('active');});
+}
+
+function weekHTML(wi){
+  return `
+  <div class="phero">
+    <h2>${weekIcons[wi]} Week ${wi+1} — ${weekTitles[wi]}</h2>
+    <p>Vijayam Institute of Technology · Sanjeevanayuni Vooru Village Survey</p>
+    <div class="week-chip">Week ${wi+1} of 6</div>
+  </div>
+  <div class="kpbox" id="kpbox${wi}">
+    <div class="kpbox-hdr">
+      <div class="kpbox-title">⚠️ Key Problems — Week ${wi+1}</div>
+      <span class="kpbox-sub">Auto-generated from survey responses</span>
+    </div>
+    <div class="kptags" id="kpt${wi}"></div>
+    ${role==='admin'?`<div class="kpadd"><input class="kpi" id="kpi${wi}" placeholder="Add a problem you observed..."><button class="kpbtn" onclick="addKP(${wi})">+ Add</button></div>`:''}
+  </div>
+  <div id="dupWarn${wi}" class="dup-warn-hidden"></div>
+  <div id="personArea${wi}">
+    <div class="pprow" id="pp${wi}"></div>
+    <div id="pf${wi}"></div>
+    ${role==='admin'?`<div class="week-note">📌 Admin: Click + to add more respondents for this week.</div>`:''}
+  </div>`;
+}
+
+// ══ KEY PROBLEMS ══
+function computeKP(wi){
+  const ws=subs.filter(s=>s.wi===wi&&s.answers);
+  if(!ws.length)return[];
+  const qs=weekQs[wi];const problems=[];
+  qs.forEach((q,qi)=>{
+    if(!q.good)return;
+    const answers=ws.map(s=>s.answers[qi]).filter(Boolean);
+    if(!answers.length)return;
+    const badCount=answers.filter(a=>a!==q.good).length;
+    const pct=Math.round((badCount/answers.length)*100);
+    if(pct>=35){
+      const badMap={};answers.filter(a=>a!==q.good).forEach(a=>{badMap[a]=(badMap[a]||0)+1;});
+      const top=Object.entries(badMap).sort((a,b)=>b[1]-a[1])[0];
+      const lbl=buildKPLabel(q.q,top?top[0]:null,pct);
+      if(lbl&&!problems.includes(lbl))problems.push(lbl);
+    }
+  });
+  return problems;
+}
+function buildKPLabel(q,bad,pct){
+  const ql=q.toLowerCase();
+  if(ql.includes('wash your hands before eating'))return`${pct}% not washing hands before meals`;
+  if(ql.includes('wash your hands after using the toilet'))return`${pct}% skip handwashing after toilet`;
+  if(ql.includes('brush your teeth'))return`${pct}% brush teeth rarely`;
+  if(ql.includes('take a bath'))return`${pct}% not bathing regularly`;
+  if(ql.includes('nails clean'))return`${pct}% not keeping nails clean`;
+  if(ql.includes('clean clothes'))return`${pct}% not wearing clean clothes daily`;
+  if(ql.includes('cover food'))return`${pct}% not covering food — fly risk`;
+  if(ql.includes('drink clean or boiled'))return`${pct}% drinking unsafe water`;
+  if(ql.includes('toilet at your home'))return`${pct}% of households have no toilet`;
+  if(ql.includes('all family members use'))return`${pct}% not using toilet regularly`;
+  if(ql.includes('household waste'))return bad?`${pct}% dumping waste in ${bad.toLowerCase()}`:`${pct}% improper waste disposal`;
+  if(ql.includes('garbage collection'))return`${pct}% no garbage collection in village`;
+  if(ql.includes('garbage in open'))return`${pct}% see open garbage often`;
+  if(ql.includes('covered dustbin'))return`${pct}% not using covered dustbin`;
+  if(ql.includes('boil or filter'))return`${pct}% drinking unboiled water`;
+  if(ql.includes('water storage'))return`${pct}% not cleaning water storage`;
+  if(ql.includes('fruits and vegetables before'))return`${pct}% not washing produce`;
+  if(ql.includes('children in your house follow handwashing'))return`${pct}% children skipping handwashing`;
+  if(ql.includes('mosquito problems'))return`${pct}% facing mosquito problems`;
+  if(ql.includes('drainage facilities'))return`${pct}% have no drainage`;
+  if(ql.includes('sweep and clean'))return`${pct}% cleaning surroundings rarely`;
+  if(ql.includes('separate wet waste'))return`${pct}% not separating wet/dry waste`;
+  if(ql.includes('plastic waste'))return bad?`${pct}% ${bad.toLowerCase()} plastic`:`${pct}% mishandling plastic`;
+  if(ql.includes('public places'))return`${pct}% say public places unclean`;
+  if(ql.includes('drains cleaned'))return`${pct}% say drains rarely cleaned`;
+  if(ql.includes('bad smell'))return`${pct}% face garbage smell often`;
+  if(ql.includes('eat fruits'))return`${pct}% not eating fruits regularly`;
+  if(ql.includes('green leafy'))return`${pct}% consuming greens rarely`;
+  if(ql.includes('drink milk'))return`${pct}% not drinking milk regularly`;
+  if(ql.includes('junk food'))return`${pct}% eating junk food frequently`;
+  if(ql.includes('cover your mouth'))return`${pct}% not covering mouth when coughing`;
+  if(ql.includes('stagnant water'))return`${pct}% not cleaning stagnant water`;
+  if(ql.includes('mosquito protection'))return`${pct}% sleeping without protection`;
+  if(ql.includes('first aid'))return`${pct}% no first aid kit at home`;
+  if(ql.includes('diseases spread'))return`${pct}% unaware of disease spread`;
+  if(ql.includes('disinfect'))return`${pct}% rarely disinfecting items`;
+  return null;
+}
+function renderKP(wi){
+  const d=document.getElementById('kpt'+wi);if(!d)return;
+  const box=document.getElementById('kpbox'+wi);
+  const derived=computeKP(wi);
+  const all=[...derived,...(extraKP[wi]||[])];
+  if(box)box.className=all.length?'kpbox has-items':'kpbox';
+  d.innerHTML=all.map((p,i)=>`<span class="kptag">${p}${role==='admin'?`<button onclick="removeKP(${wi},${i})" title="Remove">×</button>`:''}</span>`).join('');
+  updateTicker();
+}
+function removeKP(wi,i){
+  const derived=computeKP(wi);
+  if(i>=derived.length)extraKP[wi].splice(i-derived.length,1);
+  renderKP(wi);
+}
+function addKP(wi){
+  const inp=document.getElementById('kpi'+wi);if(!inp)return;
+  const v=inp.value.trim();if(!v)return;
+  if(!extraKP[wi])extraKP[wi]=[];
+  extraKP[wi].push(v);renderKP(wi);inp.value='';
+  toast('✅ Problem noted for Week '+(wi+1));
+}
+function updateTicker(){
+  const all=[];
+  for(let wi=0;wi<6;wi++){[...computeKP(wi),...(extraKP[wi]||[])].forEach(p=>all.push(p));}
+  if(!all.length){
+    document.getElementById('tickerScroll').innerHTML='<span class="ticker-item">Submit surveys to see auto-generated community problems here</span>';
+    return;
+  }
+  const dbl=[...all,...all];
+  document.getElementById('tickerScroll').innerHTML=dbl.map(p=>`<span class="ticker-item">${p}</span>`).join('');
+}
+
+// ══ PERSON PROGRESS ══
+function getWeekSubs(wi){
+  // Sort by submission id (timestamp) so respondent 1=first submitted, 2=second, etc.
+  return subs.filter(s=>s.wi===wi).slice().sort((a,b)=>(a.id||0)-(b.id||0));
+}
+function renderProgress(wi,activeId){
+  const d=document.getElementById('pp'+wi);if(!d)return;
+  if(role==='user'){
+    const myEntry=subs.find(s=>s.wi===wi&&fn(s.name)===fn(userName)&&s.submittedBy===userEmail);
+    d.innerHTML=`<span class="pp-lbl">Your response:</span>
+      <div class="ppdot ${myEntry?'done':'active'}">${myEntry?'':'1'}</div>
+      <span class="pp-count">${myEntry?'✅ Submitted':'Not yet submitted'}</span>`;
+    return;
+  }
+  // Admin: show each submitted respondent as a numbered dot sorted by time
+  const ws=getWeekSubs(wi);
+  d.innerHTML=`<span class="pp-lbl">Respondent:</span>`+
+    ws.map((s,i)=>{
+      const num=i+1;
+      const isA=s.id===activeId;
+      return `<div class="ppdot ${isA?'active':'done'}" onclick="switchPersonById(${wi},${s.id})" title="${s.name} · ${s.time}">${isA?num:''}</div>`;
+    }).join('')+
+    `<button class="ppdot" style="background:var(--g6);border-color:var(--g3);color:var(--g2);font-size:18px;line-height:1" onclick="addNewRespondent(${wi})" title="Add new respondent">+</button>`+
+    `<span class="pp-count">${ws.length} submitted</span>`;
+}
+function addNewRespondent(wi){
+  const ws=getWeekSubs(wi);
+  renderProgress(wi,null);
+  renderFormNew(wi,ws.length+1);
+}
+function switchPersonById(wi,subId){
+  renderProgress(wi,subId);
+  renderFormById(wi,subId);
+}
+function switchPerson(wi,p){
+  const ws=getWeekSubs(wi);
+  if(p<=ws.length){switchPersonById(wi,ws[p-1].id);}
+  else{renderProgress(wi,null);renderFormNew(wi,p);}
+}
+
+// ══ FORM ══
+
+// Show read-only answers for a submitted respondent (admin clicking a dot)
+function renderFormById(wi,subId){
+  const d=document.getElementById('pf'+wi);if(!d)return;
+  document.getElementById('dupWarn'+wi).className='dup-warn-hidden';
+  const s=subs.find(x=>x.id===subId);
+  if(!s){d.innerHTML='';return;}
+  const ws=getWeekSubs(wi);
+  const num=ws.findIndex(x=>x.id===subId)+1;
+  const qs=weekQs[wi];
+  const answers=s.answers||{};
+  const goodCount=qs.filter((q,qi)=>q.good&&answers[qi]===q.good).length;
+  const gradedQs=qs.filter(q=>q.good).length;
+  const pct=gradedQs?Math.round((goodCount/gradedQs)*100):0;
+  const pctColor=pct>=70?'var(--g1)':pct>=40?'var(--amber)':'var(--red)';
+  const pctBg=pct>=70?'var(--g6)':pct>=40?'var(--amber-bg)':'var(--red-bg)';
+  const pctBorder=pct>=70?'var(--g7)':pct>=40?'var(--amber-border)':'var(--red-border)';
+
+  d.innerHTML=`
+  <div class="fcard" style="border-left:4px solid var(--g3)">
+    <div class="fcard-title">👤 Respondent ${num} — ${s.name}</div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">
+      <div style="flex:1;min-width:110px;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:10px;text-align:center">
+        <div style="font-size:11px;color:var(--muted);margin-bottom:3px">Age / Gender</div>
+        <div style="font-size:15px;font-weight:700;color:var(--text)">${s.age||'—'} ${s.gender||''}</div>
+      </div>
+      <div style="flex:1;min-width:110px;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:10px;text-align:center">
+        <div style="font-size:11px;color:var(--muted);margin-bottom:3px">Submitted</div>
+        <div style="font-size:12px;font-weight:600;color:var(--text)">${s.time}</div>
+      </div>
+      <div style="flex:1;min-width:110px;background:${pctBg};border:1px solid ${pctBorder};border-radius:10px;padding:10px;text-align:center">
+        <div style="font-size:11px;color:var(--muted);margin-bottom:3px">Good Practice</div>
+        <div style="font-size:20px;font-weight:700;color:${pctColor};font-family:'Playfair Display',serif">${pct}%</div>
+      </div>
+      <div style="flex:1;min-width:110px;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:10px;text-align:center">
+        <div style="font-size:11px;color:var(--muted);margin-bottom:3px">Status</div>
+        <div style="font-size:13px;font-weight:700;color:${s.status==='Approved'?'var(--g2)':s.status==='Flagged'?'var(--red)':'var(--amber)'}">${s.status}</div>
+      </div>
+    </div>
+  </div>
+  <div class="fcard">
+    <div class="fcard-title">${weekIcons[wi]} ${weekTitles[wi]} — Responses</div>
+    <div class="qlist">
+      ${qs.map((q,qi)=>{
+        const ans=answers[qi]||'';
+        const isGood=q.good?(ans===q.good):null;
+        const icon=!ans?'⬜':isGood===null?'📝':isGood?'✅':'⚠️';
+        const ansColor=!ans?'var(--light)':isGood===null?'var(--blue)':isGood?'var(--g2)':'var(--red)';
+        const ansBg=!ans?'var(--bg)':isGood===null?'var(--blue-bg)':isGood?'var(--g6)':'var(--red-bg)';
+        const ansBorder=!ans?'var(--border)':isGood===null?'var(--blue-border)':isGood?'var(--g7)':'var(--red-border)';
+        return `<div class="qitem">
+          <span class="qnum">${qi+1}</span>
+          <div class="qbody">
+            <div class="qtext">${q.q}</div>
+            <span style="display:inline-flex;align-items:center;gap:5px;padding:5px 13px;border-radius:8px;font-size:13px;font-weight:600;background:${ansBg};color:${ansColor};border:1px solid ${ansBorder}">${icon} ${ans||'Not answered'}</span>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>
+  </div>
+  <div class="form-actions">
+    <button class="btn-ghost" onclick="editRespondent(${wi},${subId})">✏️ Edit This Response</button>
+    <button class="tact" onclick="appSub(${subId})" style="padding:9px 16px;font-size:12px">✓ Approve</button>
+    <button class="tact" onclick="flagSub(${subId});renderFormById(${wi},${subId})" style="padding:9px 16px;font-size:12px;color:var(--amber)">⚑ Flag</button>
+  </div>`;
+}
+
+// Edit mode: load existing submission into the editable form
+function editRespondent(wi,subId){
+  const s=subs.find(x=>x.id===subId);if(!s)return;
+  const ws=getWeekSubs(wi);
+  const person=ws.findIndex(x=>x.id===subId)+1;
+  // Temporarily set s.person to match for renderForm compatibility
+  s.person=person;
+  renderForm(wi,person);
+}
+
+// Blank form for a brand-new respondent
+function renderFormNew(wi,person){
+  renderForm(wi,person);
+}
+
+function renderForm(wi,person){
+  const d=document.getElementById('pf'+wi);if(!d)return;
+  const dupDiv=document.getElementById('dupWarn'+wi);
+  const personArea=document.getElementById('personArea'+wi);
+
+  // User duplicate check — block entire week if already submitted
+  if(role==='user'){
+    const myEntry=subs.find(s=>s.wi===wi&&fn(s.name)===fn(userName)&&s.submittedBy===userEmail);
+    if(myEntry){
+      if(dupDiv){
+        dupDiv.className='dup-warn';
+        dupDiv.innerHTML=`<div class="dup-warn-icon">🚫</div><div><h4>Already Submitted — Week ${wi+1}</h4><p>You submitted on ${myEntry.time}. Each person can only submit once per week. Please move to the next week's survey.</p></div>`;
+      }
+      if(personArea)personArea.style.display='none';
+      return;
+    } else {
+      if(dupDiv)dupDiv.className='dup-warn-hidden';
+      if(personArea)personArea.style.display='block';
+    }
+  } else {
+    if(dupDiv)dupDiv.className='dup-warn-hidden';
+  }
+
+  const prev=role==='admin'?subs.find(s=>s.wi===wi&&s.person===person):null;
+  const prefillName=role==='user'?userName:(prev?prev.name:'');
+  const nameRO=role==='user'?'readonly':'';
+
+  d.innerHTML=`
+  <div class="fcard">
+    <div class="fcard-title">Respondent ${person} · Basic Details</div>
+    <div class="igrid">
+      <div class="ifield"><label>Full Name *</label><input id="fn_${wi}_${person}" placeholder="Full name" value="${prefillName}" ${nameRO} style="${nameRO?'opacity:.75;background:#f7faf8':''}"></div>
+      <div class="ifield"><label>Age</label><input type="number" id="fa_${wi}_${person}" min="5" max="100" placeholder="Age" value="${prev?prev.age:''}"></div>
+      <div class="ifield"><label>Gender</label><select id="fg_${wi}_${person}"><option value="">Select</option><option ${prev&&prev.gender==='Male'?'selected':''}>Male</option><option ${prev&&prev.gender==='Female'?'selected':''}>Female</option><option ${prev&&prev.gender==='Other'?'selected':''}>Other</option></select></div>
+      <div class="ifield"><label>Contact</label><input id="fc_${wi}_${person}" placeholder="Mobile number" value="${prev?prev.contact:''}"></div>
+      <div class="ifield"><label>Village</label><input value="Sanjeevanayuni Vooru" readonly style="opacity:.65"></div>
+      <div class="ifield"><label>Date</label><input type="date" id="fd_${wi}_${person}" value="${new Date().toISOString().split('T')[0]}"></div>
+    </div>
+  </div>
+  <div class="fcard">
+    <div class="fcard-title">${weekIcons[wi]} ${weekTitles[wi]} — Survey Questions</div>
+    <div class="qlist">
+      ${weekQs[wi].map((q,qi)=>`
+        <div class="qitem">
+          <span class="qnum">${qi+1}</span>
+          <div class="qbody">
+            <div class="qtext">${q.q}</div>
+            <div class="qopts" id="qo_${wi}_${person}_${qi}">
+              ${q.opts.map(o=>{
+                const sel=prev&&prev.answers&&prev.answers[qi]===o;
+                return `<label class="opt${sel?' sel':''}" id="ol_${wi}_${person}_${qi}_${o.replace(/[^a-z0-9]/gi,'_')}"><input type="radio" name="q_${wi}_${person}_${qi}" value="${o}" ${sel?'checked':''} onchange="markOpt(${wi},${person},${qi},this)">${o}</label>`;
+              }).join('')}
+              ${q.other?`<input class="qother" id="qoth_${wi}_${person}_${qi}" placeholder="Other...">`:``}
+            </div>
+          </div>
+        </div>`).join('')}
+    </div>
+  </div>
+  ${prev?`<div style="background:var(--g6);border:1px solid var(--g7);border-radius:var(--radius);padding:11px 15px;margin-bottom:12px;font-size:12.5px;color:var(--g2)">✅ Already submitted on ${prev.time}. Admin can resubmit to update.</div>`:''}
+  <div class="form-actions">
+    <button class="btn-submit" onclick="submitPerson(${wi},${person})">✅ Submit${role==='admin'?' Respondent '+person:''} · Week ${wi+1}</button>
+    <button class="btn-ghost" onclick="clearForm(${wi},${person})">↺ Clear</button>
+  </div>`;
+}
+
+function markOpt(wi,person,qi,radio){
+  document.querySelectorAll(`[id^="ol_${wi}_${person}_${qi}_"]`).forEach(el=>el.classList.remove('sel'));
+  radio.closest('.opt').classList.add('sel');
+}
+function clearForm(wi,person){
+  document.querySelectorAll(`[name^="q_${wi}_${person}_"]`).forEach(r=>r.checked=false);
+  document.querySelectorAll(`[id^="ol_${wi}_${person}_"]`).forEach(el=>el.classList.remove('sel'));
+}
+
+function submitPerson(wi,person){
+  const nameEl=document.getElementById('fn_'+wi+'_'+person);
+  const name=nameEl?nameEl.value.trim():'';
+  if(!name){toast('⚠️ Please enter the respondent\'s name');return;}
+
+  // ── DUPLICATE GUARD for users ──
+  if(role==='user'){
+    const alreadyDone=subs.some(s=>s.wi===wi&&fn(s.name)===fn(userName)&&s.submittedBy===userEmail);
+    if(alreadyDone){
+      toast('🚫 You already submitted Week '+(wi+1)+'. Duplicate not allowed.');
+      return;
+    }
+  }
+
+  // ── DUPLICATE GUARD by name+week for admin entries ──
+  if(role==='admin'){
+    const dupByName=subs.find(s=>s.wi===wi&&fn(s.name)===fn(name)&&s.person!==person&&s.submittedBy!=='__admin__');
+    if(dupByName){
+      toast('⚠️ '+name+' already has a submission for Week '+(wi+1));
+    }
+  }
+
+  const answers=weekQs[wi].map((_,qi)=>{
+    const r=document.querySelector(`input[name="q_${wi}_${person}_${qi}"]:checked`);
+    return r?r.value:'';
+  });
+  if(answers.filter(a=>!a).length>3){toast('⚠️ Please answer at least most questions');return;}
+
+  const entry={
+    id:Date.now(),wi,person,name,
+    age:document.getElementById('fa_'+wi+'_'+person)?.value||'',
+    gender:document.getElementById('fg_'+wi+'_'+person)?.value||'',
+    contact:document.getElementById('fc_'+wi+'_'+person)?.value||'',
+    answers,
+    time:new Date().toLocaleString('en-IN'),
+    status:'Pending',
+    submittedBy:role==='admin'?'__admin__':userEmail
+  };
+
+  // For users: always add new (duplicate already blocked above)
+  // For admin: replace if same person slot, else add
+  if(role==='admin'){
+    const idx=subs.findIndex(s=>s.wi===wi&&s.person===person);
+    if(idx>=0)subs[idx]=entry;else subs.push(entry);
+  } else {
+    subs.push(entry);
+  }
+
+  save();
+  saveEntry(entry).then(()=>{
+    toast('☁️ Saved to AWS!');
+  }).catch(()=>{
+    toast('⚠️ AWS save failed — saved locally only');
+  });
+  refreshAll();
+  toast('✅ '+(role==='user'?name:'Respondent '+person)+' · Week '+(wi+1)+' submitted!');
+
+  if(role==='admin'){
+    setTimeout(()=>{const ws2=getWeekSubs(wi);if(ws2.length>=person){switchPersonById(wi,ws2[person-1].id);}else{addNewRespondent(wi);}toast('➡️ Ready for Respondent '+(person+1));},700);
+  } else {
+    // For users: re-render the form to show the block
+    renderForm(wi,1);
+    renderProgress(wi,1);
+  }
+}
+
+// ══ REFRESH ══
+function refreshAll(){
+  for(let wi=0;wi<6;wi++){
+    renderKP(wi);
+    const ws=getWeekSubs(wi);
+    if(role==='admin'&&ws.length>0){
+      // Show first respondent's answers by default
+      renderProgress(wi,ws[0].id);
+      renderFormById(wi,ws[0].id);
+    } else {
+      renderProgress(wi,null);
+      renderForm(wi,1);
+    }
+  }
+  updateTicker();updateAdminNums();updateSidebarCounts();
+}
+function updateSidebarCounts(){
+  const ms=mySubs();const mw=myWeeks();
+  const set=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
+  set('sbMySubs',ms.length);set('sbMyWeeks',mw.length);
+  set('sbTotal',subs.length);set('sbPending',subs.filter(s=>s.status==='Pending').length);
+}
+
+// ══ PROFILE ══
+function renderProfile(){
+  const card=document.getElementById('profileCard');if(!card)return;
+  const myS=mySubs();const myW=myWeeks();
+  const init=(fn(userName)||'U')[0].toUpperCase();
+  const weekCounts=[0,1,2,3,4,5].map(wi=>myS.filter(s=>s.wi===wi).length);
+
+  card.innerHTML=`
+    <div class="profile-header">
+      <div class="prof-av">${init}</div>
+      <div>
+        <div class="prof-name">${userName}</div>
+        <div class="prof-email">${userEmail}</div>
+        <div class="prof-role-badge">${role==='admin'?'👑 Admin':'👤 Participant'}</div>
+      </div>
+    </div>
+    <div class="stats-grid">
+      <div class="stat-card"><span class="stat-n">${myS.length}</span><span class="stat-l">My Submissions</span></div>
+      <div class="stat-card"><span class="stat-n">${myW.length}</span><span class="stat-l">Weeks Done</span></div>
+      <div class="stat-card"><span class="stat-n">${6-myW.length}</span><span class="stat-l">Weeks Remaining</span></div>
+      <div class="stat-card"><span class="stat-n">${myW.length>0?Math.round((myW.length/6)*100)+'%':'0%'}</span><span class="stat-l">Completion</span></div>
+    </div>
+    <div style="font-size:11px;text-transform:uppercase;letter-spacing:1.3px;color:var(--light);font-weight:700;margin-bottom:8px">Weekly Attendance</div>
+    <div class="att-week-grid">
+      ${[0,1,2,3,4,5].map(wi=>{
+        const cnt=weekCounts[wi];
+        return `<div class="awg ${cnt>0?'done':''}">
+          <span class="awg-n">${cnt}</span>W${wi+1}
+          ${cnt>0?'<div style="font-size:9px;margin-top:2px;color:var(--g3)">✓ Done</div>':'<div style="font-size:9px;margin-top:2px">Pending</div>'}
+        </div>`;
+      }).join('')}
+    </div>`;
+
+  // Personalised goal based on user's actual responses
+  const goalDiv=document.createElement('div');
+  if(myW.length>0){
+    // Generate personalised tips based on weak answers
+    const weakAreas=[];
+    myS.forEach(s=>{
+      if(!s.answers)return;
+      weekQs[s.wi].forEach((q,qi)=>{
+        if(q.good&&s.answers[qi]&&s.answers[qi]!==q.good){
+          weakAreas.push({wi:s.wi,q:q.q,ans:s.answers[qi],good:q.good});
+        }
+      });
+    });
+    const personalTip=weakAreas.length>0
+      ? `Based on your responses, focus on: <strong>${buildPersonalTip(weakAreas[0])}</strong>`
+      : `<strong>${goals[myW[myW.length-1]]}</strong>`;
+
+    goalDiv.innerHTML=`<div class="goal-card" style="margin-top:14px">
+      <div class="goal-title">🎯 Your Personalised Health Goal</div>
+      <div class="goal-text">${personalTip}</div>
+      ${weakAreas.length>1?`<div style="margin-top:10px;font-size:12px;color:var(--blue)">Also work on: ${weakAreas.slice(1,3).map(w=>buildPersonalTip(w)).filter(Boolean).join('; ')}.</div>`:''}
+      <div class="goal-badge">⭐ ${myW.length}/6 weeks completed</div>
+    </div>`;
+  } else {
+    goalDiv.innerHTML=`<div class="goal-card" style="margin-top:14px">
+      <div class="goal-title">🎯 Your Personalised Health Goal</div>
+      <div class="goal-text">Complete at least one survey week to receive your personalised health improvement goal based on your actual answers.</div>
+    </div>`;
+  }
+  card.appendChild(goalDiv);
+
+  // Pending weeks
+  const pending=[0,1,2,3,4,5].filter(wi=>weekCounts[wi]===0);
+  const pc=document.getElementById('pendingCard');
+  const pl=document.getElementById('pendingList');
+  if(pc&&pl){
+    if(pending.length>0&&pending.length<6){
+      pc.style.display='block';
+      pl.innerHTML=pending.map(wi=>`
+        <div class="pending-row">
+          <span class="pending-name">${weekIcons[wi]} Week ${wi+1} — ${weekTitles[wi]}</span>
+          <button class="btn-fill" onclick="goTab(${wi},document.querySelectorAll('.ntab')[${wi}])">Fill Now →</button>
+        </div>`).join('');
+    } else pc.style.display='none';
+  }
+}
+
+function buildPersonalTip(item){
+  const q=item.q.toLowerCase();
+  if(q.includes('wash your hands before eating'))return'wash hands before every meal';
+  if(q.includes('wash your hands after'))return'always wash hands after toilet';
+  if(q.includes('brush your teeth'))return'brush teeth twice daily';
+  if(q.includes('take a bath'))return'bathe every day';
+  if(q.includes('nails'))return'keep nails trimmed and clean';
+  if(q.includes('clean clothes'))return'wear clean clothes daily';
+  if(q.includes('cover food'))return'always cover stored food';
+  if(q.includes('boil or filter'))return'boil/filter drinking water daily';
+  if(q.includes('toilet at your home'))return'use toilet facilities always';
+  if(q.includes('household waste'))return'dispose waste only in dustbins';
+  if(q.includes('garbage'))return'maintain clean surroundings';
+  if(q.includes('plastic waste'))return'stop burning plastic waste';
+  if(q.includes('sweep'))return'sweep surroundings daily';
+  if(q.includes('separate wet waste'))return'separate wet and dry waste';
+  if(q.includes('fruits regularly'))return'eat fruits every day';
+  if(q.includes('green leafy'))return'consume greens daily';
+  if(q.includes('milk'))return'drink milk regularly';
+  if(q.includes('junk food'))return'reduce junk food intake';
+  if(q.includes('cover your mouth'))return'cover mouth when coughing';
+  if(q.includes('stagnant water'))return'clean stagnant water regularly';
+  if(q.includes('mosquito protection'))return'use mosquito net at night';
+  if(q.includes('first aid'))return'keep first aid kit at home';
+  if(q.includes('disinfect'))return'disinfect household items regularly';
+  return item.q.slice(0,50);
+}
+
+// ══ STATISTICS (admin-only) ══
+function renderStats(){
+  const gs=document.getElementById('globalStats');
+  const sc=document.getElementById('statsContent');
+  if(!gs||!sc)return;
+
+  const total=subs.length;
+  const people=[...new Set(subs.map(s=>fn(s.name)))].length;
+  const approved=subs.filter(s=>s.status==='Approved').length;
+  const weeksCovered=[...new Set(subs.map(s=>s.wi))].length;
+
+  gs.innerHTML=`<div class="admin-stats">
+    <div class="stat-card"><span class="stat-n">${total}</span><span class="stat-l">Total Submissions</span></div>
+    <div class="stat-card"><span class="stat-n">${people}</span><span class="stat-l">Unique Participants</span></div>
+    <div class="stat-card"><span class="stat-n">${weeksCovered}/6</span><span class="stat-l">Weeks Covered</span></div>
+    <div class="stat-card"><span class="stat-n">${approved}</span><span class="stat-l">Approved</span></div>
+  </div>`;
+
+  if(!total){
+    sc.innerHTML=`<div class="fcard" style="text-align:center;padding:36px;color:var(--muted)">
+      <div style="font-size:48px;margin-bottom:14px">📊</div>
+      <p>Submit survey responses to see village statistics and insights here.</p>
+    </div>`;
+    return;
+  }
+  sc.innerHTML='';
+
+  // Survey Completion Progress bar
+  const progDiv=document.createElement('div');
+  progDiv.className='prog-bar-wrap';
+  const pct=Math.round((total/30)*100);
+  progDiv.innerHTML=`<div class="prog-bar-lbl"><span>📊 Survey Completion Progress</span><span>${total} / 30 entries</span></div>
+    <div class="prog-track"><div class="prog-fill" style="width:${Math.min(pct,100)}%"></div></div>
+    <div style="font-size:11.5px;color:var(--muted);margin-top:6px">${pct}% of target completed</div>`;
+  sc.appendChild(progDiv);
+
+  // Submissions per week bar chart
+  const weekCtDiv=document.createElement('div');
+  weekCtDiv.className='chart-sec';
+  const weekCounts=[0,1,2,3,4,5].map(wi=>subs.filter(s=>s.wi===wi).length);
+  weekCtDiv.innerHTML=`<div class="chart-title"><div class="chart-title-icon">📅</div>Submissions Per Week</div>
+    ${weekCounts.map((c,i)=>`<div class="bar-row">
+      <span class="bar-lbl">Week ${i+1} · ${weekTitles[i].split(' ')[0]}</span>
+      <div class="bar-track"><div class="bar-fill bar-good" style="width:${Math.round((c/Math.max(...weekCounts,1))*100)}%"></div></div>
+      <span class="bar-val">${c}</span>
+    </div>`).join('')}`;
+  sc.appendChild(weekCtDiv);
+
+  // Chart.js pie charts grid
+  const chartsGrid=document.createElement('div');
+  chartsGrid.className='charts-grid';
+
+  // Gender distribution
+  const genderWrap=document.createElement('div');genderWrap.className='chart-canvas-wrap';
+  const genders=subs.map(s=>s.gender||'Unknown');
+  const gMap={};genders.forEach(g=>{gMap[g]=(gMap[g]||0)+1;});
+  genderWrap.innerHTML=`<div class="chart-title"><div class="chart-title-icon">👥</div>Gender Distribution</div><canvas id="genderChart" height="200"></canvas>`;
+  chartsGrid.appendChild(genderWrap);
+
+  // Status distribution
+  const statusWrap=document.createElement('div');statusWrap.className='chart-canvas-wrap';
+  const pending2=subs.filter(s=>s.status==='Pending').length;
+  const flagged=subs.filter(s=>s.status==='Flagged').length;
+  statusWrap.innerHTML=`<div class="chart-title"><div class="chart-title-icon">📋</div>Submission Status</div><canvas id="statusChart" height="200"></canvas>`;
+  chartsGrid.appendChild(statusWrap);
+  sc.appendChild(chartsGrid);
+
+  // Week trend line chart
+  const lineWrap=document.createElement('div');lineWrap.className='chart-sec';
+  lineWrap.innerHTML=`<div class="chart-title"><div class="chart-title-icon">📈</div>Weekly Survey Trend</div><canvas id="trendChart" height="120"></canvas>`;
+  sc.appendChild(lineWrap);
+
+  // Key hygiene aspects analysis
+  const aspects=[
+    {title:'Handwashing before meals',wi:0,qi:0,good:'Always',mid:'Sometimes',bad:'Never'},
+    {title:'Toilet access at home',wi:1,qi:0,good:'Yes',bad:'No'},
+    {title:'Water safety — boiled/filtered',wi:2,qi:1,good:'Yes',bad:'No'},
+    {title:'Plastic waste handling',wi:3,qi:2,good:'Reuse',mid:'Throw away',bad:'Burn'},
+    {title:'Fruit consumption',wi:4,qi:1,good:'Yes',mid:'Sometimes',bad:'No'},
+    {title:'Mosquito protection at night',wi:5,qi:2,good:'Mosquito net',mid:'Repellent',bad:'No protection'}
+  ];
+
+  const aspectsDiv=document.createElement('div');aspectsDiv.className='chart-sec';
+  aspectsDiv.innerHTML=`<div class="chart-title"><div class="chart-title-icon">🔬</div>Key Hygiene Indicators — Detailed Analysis</div>
+    <canvas id="radarChart" height="300"></canvas>`;
+  sc.appendChild(aspectsDiv);
+
+  const aspectDetailDiv=document.createElement('div');
+  aspects.forEach(asp=>{
+    const ws=subs.filter(s=>s.wi===asp.wi&&s.answers&&s.answers[asp.qi]);
+    if(!ws.length)return;
+    const tot=ws.length;
+    const counts={};ws.forEach(s=>{const v=s.answers[asp.qi];counts[v]=(counts[v]||0)+1;});
+    const gp=Math.round(((counts[asp.good]||0)/tot)*100);
+    const mp=asp.mid?Math.round(((counts[asp.mid]||0)/tot)*100):0;
+    const bp=Math.round(((counts[asp.bad]||0)/tot)*100);
+    const oc=gp>=70?'var(--g2)':gp>=40?'var(--amber)':'var(--red)';
+    const outcomes={
+      high:'Good hygiene practice observed — community is aware and compliant.',
+      mid:'Moderate compliance. Awareness campaigns can improve this significantly.',
+      low:'Critical issue — urgent health awareness intervention required in this area.'
+    };
+    const outcome=gp>=70?outcomes.high:gp>=40?outcomes.mid:outcomes.low;
+    const card=document.createElement('div');card.className='chart-sec';
+    card.innerHTML=`<div class="chart-title"><div class="chart-title-icon">📊</div>${asp.title}</div>
+      <div class="bar-row"><span class="bar-lbl">✅ ${asp.good}</span><div class="bar-track"><div class="bar-fill bar-good" style="width:${gp}%"></div></div><span class="bar-val">${gp}%</span></div>
+      ${asp.mid?`<div class="bar-row"><span class="bar-lbl">⚠️ ${asp.mid}</span><div class="bar-track"><div class="bar-fill bar-mid" style="width:${mp}%"></div></div><span class="bar-val">${mp}%</span></div>`:''}
+      <div class="bar-row"><span class="bar-lbl">❌ ${asp.bad}</span><div class="bar-track"><div class="bar-fill bar-bad" style="width:${bp}%"></div></div><span class="bar-val">${bp}%</span></div>
+      <div class="outcome"><div class="outcome-title" style="color:${oc}">📝 Community Outcome</div><div class="outcome-text">${outcome}</div></div>`;
+    aspectDetailDiv.appendChild(card);
+  });
+  sc.appendChild(aspectDetailDiv);
+
+  // Initialize charts after DOM is ready
+  requestAnimationFrame(()=>{
+    // Destroy old charts
+    Object.values(charts).forEach(c=>{try{c.destroy();}catch(e){}});charts={};
+
+    // Gender pie
+    const gCtx=document.getElementById('genderChart');
+    if(gCtx)charts.gender=new Chart(gCtx,{type:'doughnut',data:{labels:Object.keys(gMap),datasets:[{data:Object.values(gMap),backgroundColor:['#27ae60','#e91e8c','#5dade2','#aab7b8'],borderWidth:0,hoverOffset:4}]},options:{plugins:{legend:{position:'bottom'}},cutout:'60%'}});
+
+    // Status pie
+    const sCtx=document.getElementById('statusChart');
+    if(sCtx)charts.status=new Chart(sCtx,{type:'doughnut',data:{labels:['Pending','Approved','Flagged'],datasets:[{data:[pending2,approved,flagged],backgroundColor:['#f9e79f','#abebc6','#f5b7b1'],borderColor:['#e6ac1a','#27ae60','#e74c3c'],borderWidth:2,hoverOffset:4}]},options:{plugins:{legend:{position:'bottom'}},cutout:'60%'}});
+
+    // Weekly trend line
+    const tCtx=document.getElementById('trendChart');
+    if(tCtx)charts.trend=new Chart(tCtx,{type:'line',data:{labels:weekTitles.map((t,i)=>'W'+(i+1)),datasets:[{label:'Submissions',data:weekCounts,borderColor:'#1e8449',backgroundColor:'rgba(30,132,73,.1)',tension:.4,fill:true,pointBackgroundColor:'#1e8449',pointRadius:5,pointHoverRadius:7}]},options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{stepSize:1}}}}});
+
+    // Radar chart for hygiene indicators
+    const rCtx=document.getElementById('radarChart');
+    if(rCtx){
+      const radarLabels=aspects.map(a=>a.title);
+      const radarData=aspects.map(asp=>{
+        const ws=subs.filter(s=>s.wi===asp.wi&&s.answers&&s.answers[asp.qi]);
+        if(!ws.length)return 0;
+        const counts={};ws.forEach(s=>{const v=s.answers[asp.qi];counts[v]=(counts[v]||0)+1;});
+        return Math.round(((counts[asp.good]||0)/ws.length)*100);
+      });
+      charts.radar=new Chart(rCtx,{type:'radar',data:{labels:radarLabels,datasets:[{label:'Good Practice %',data:radarData,backgroundColor:'rgba(30,132,73,.15)',borderColor:'#1e8449',pointBackgroundColor:'#1e8449',pointRadius:5}]},options:{plugins:{legend:{display:false}},scales:{r:{beginAtZero:true,max:100,ticks:{stepSize:20,font:{size:10}}}}}});
+    }
+  });
+}
+
+// ══ ADMIN TABLE ══
+function renderAdminTable(){
+  const tb=document.getElementById('subTbody');if(!tb)return;
+  const q=(document.getElementById('searchInp')?.value||'').toLowerCase();
+  const wf=document.getElementById('filterWeek')?.value;
+  let filtered=subs.slice().reverse();
+  if(q)filtered=filtered.filter(s=>(s.name||'').toLowerCase().includes(q));
+  if(wf!==''&&wf!==undefined)filtered=filtered.filter(s=>String(s.wi)===String(wf));
+  if(!filtered.length){
+    tb.innerHTML='<tr><td colspan="8" style="text-align:center;padding:32px;color:var(--muted);font-size:13px">No submissions found.</td></tr>';
+    return;
+  }
+  tb.innerHTML=filtered.map((s,i)=>`<tr>
+    <td style="color:var(--muted);font-size:11px">${i+1}</td>
+    <td style="font-weight:500">${s.name}</td>
+    <td><span class="sbadge sb-a">W${s.wi+1}</span></td>
+    <td style="font-size:11.5px;color:var(--muted)">${s.age||'—'} ${s.gender||''}</td>
+    <td style="font-size:11px;color:var(--muted)">${s.time}</td>
+    <td style="font-size:11px;color:var(--muted)">${s.submittedBy==='__admin__'?'Admin':s.submittedBy}</td>
+    <td><span class="sbadge ${s.status==='Approved'?'sb-a':s.status==='Flagged'?'sb-f':'sb-p'}">${s.status}</span></td>
+    <td>
+      <button class="tact" onclick="viewSub(${s.id})" style="color:var(--blue)" title="View all answers">👁</button>
+      <button class="tact" onclick="appSub(${s.id})">✓</button>
+      <button class="tact" onclick="flagSub(${s.id})" style="color:var(--amber)">⚑</button>
+      <button class="tact del" onclick="delSub(${s.id})">🗑</button>
+    </td></tr>`).join('');
+}
+function appSub(id){
+  const s=subs.find(x=>x.id===id);
+  if(s){
+    s.status='Approved';
+    save();
+    updateStatus(id,'Approved').catch(e=>console.error('AWS update failed:',e));
+    renderAdminTable();updateAdminNums();renderFormById(s.wi,id);toast('✅ Approved');
+  }
+}
+function flagSub(id){
+  const s=subs.find(x=>x.id===id);
+  if(s){
+    s.status='Flagged';
+    save();
+    updateStatus(id,'Flagged').catch(e=>console.error('AWS update failed:',e));
+    renderAdminTable();updateAdminNums();toast('⚑ Flagged');
+  }
+}
+function delSub(id){
+  if(!confirm('Delete this submission? Cannot be undone.'))return;
+  deleteEntry(id).catch(e=>console.error('AWS delete failed:',e));
+  subs=subs.filter(x=>x.id!==id);save();renderAdminTable();updateAdminNums();refreshAll();toast('🗑 Deleted');
+}
+function clearAll(){
+  if(confirm('Clear ALL data from AWS? This cannot be undone.')){
+    const promises=subs.map(s=>deleteEntry(s.id));
+    Promise.all(promises).catch(e=>console.error('AWS clear failed:',e));
+    subs=[];save();refreshAll();toast('🗑 All data cleared from AWS');
+  }
+}
+function updateAdminNums(){
+  const t=subs.length,p=subs.filter(s=>s.status==='Pending').length,a=subs.filter(s=>s.status==='Approved').length,f=subs.filter(s=>s.status==='Flagged').length;
+  const set=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
+  set('sbTotal',t);set('sbPending',p);
+  const ac=document.getElementById('adminStatCards');
+  if(ac)ac.innerHTML=`
+    <div class="astat"><span class="astat-n">${t}</span><div class="astat-l">Total submissions</div></div>
+    <div class="astat"><span class="astat-n" style="color:#b7770d">${p}</span><div class="astat-l">Pending review</div></div>
+    <div class="astat"><span class="astat-n" style="color:#1e8449">${a}</span><div class="astat-l">Approved</div></div>
+    <div class="astat"><span class="astat-n" style="color:#922b21">${f}</span><div class="astat-l">Flagged</div></div>
+    <div class="astat"><span class="astat-n">${t?Math.round((a/t)*100):'0'}%</span><div class="astat-l">Approval rate</div></div>
+    <div class="astat"><span class="astat-n">30</span><div class="astat-l">Max entries</div></div>`;
+}
+
+// ══ REPORT & EXPORT ══
+function genReport(){
+  const all=[];
+  for(let wi=0;wi<6;wi++){
+    const d=computeKP(wi);
+    [...d,...(extraKP[wi]||[])].forEach(p=>all.push(`[Week ${wi+1}] ${p}`));
+  }
+  alert(`COMMUNITY SERVICE PROJECT REPORT\nHealth & Hygiene — Village Survey\n${'━'.repeat(48)}\nTo: Panchayat Secretary, Sanjeevanayuni Vooru\nFrom: Hoshika (Lead), Usha Sree, Trisha — VIT\nDate: ${new Date().toLocaleDateString('en-IN')}\n\nSURVEY SUMMARY\nTotal Submissions: ${subs.length} | Weeks: 6\nVillage: Sanjeevanayuni Vooru, Chittoor Dist.\n\nKEY PROBLEMS IDENTIFIED:\n${all.length?all.map((p,i)=>`${i+1}. ${p}`).join('\n'):'No significant issues detected yet.'}\n\nACTIONS REQUESTED:\n1. Install dustbins in all public areas\n2. Start regular garbage collection service\n3. Conduct health awareness camps\n4. Ensure safe drinking water to all homes\n5. Promote toilet use in every household\n6. Clear stagnant water to prevent mosquito breeding`);
+  toast('📄 Report generated!');
+}
+function exportCSV(){
+  const hdr='Name,Week,Age,Gender,Status,Time,Submitted By\n';
+  const rows=subs.map(s=>[s.name,'Week '+(s.wi+1),s.age,s.gender,s.status,s.time,s.submittedBy==='__admin__'?'Admin':s.submittedBy].map(v=>'"'+(v||'')+'"').join(',')).join('\n');
+  const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(hdr+rows);a.download='health_survey_data.csv';a.click();
+  toast('📥 CSV downloaded!');
+}
+
+// ══ VIEW RESPONSES MODAL ══
+let rmodCurrentIds=[];
+let rmodCurrentIndex=0;
+
+function viewSub(id){
+  // Build the ordered list from current filtered view
+  const q=(document.getElementById('searchInp')?.value||'').toLowerCase();
+  const wf=document.getElementById('filterWeek')?.value;
+  let filtered=subs.slice().reverse();
+  if(q)filtered=filtered.filter(s=>(s.name||'').toLowerCase().includes(q));
+  if(wf!==''&&wf!==undefined)filtered=filtered.filter(s=>String(s.wi)===String(wf));
+  rmodCurrentIds=filtered.map(s=>s.id);
+  rmodCurrentIndex=rmodCurrentIds.indexOf(id);
+  renderResponseModal(id);
+  document.getElementById('responseModal').style.display='flex';
+}
+
+function renderResponseModal(id){
+  const s=subs.find(x=>x.id===id);
+  if(!s)return;
+  document.getElementById('rmodName').textContent=s.name||'Unknown';
+  document.getElementById('rmodMeta').textContent=
+    `Week ${s.wi+1} — ${weekTitles[s.wi]}  ·  Submitted: ${s.time}  ·  By: ${s.submittedBy==='__admin__'?'Admin':s.submittedBy}`;
+  document.getElementById('rmodBadges').innerHTML=
+    `<span class="rmodal-badge">W${s.wi+1}</span>`+
+    `<span class="rmodal-badge">${s.age||'—'} ${s.gender||''}</span>`+
+    `<span class="rmodal-badge ${s.status==='Approved'?'':''}">Status: ${s.status}</span>`;
+
+  const qs=weekQs[s.wi]||[];
+  const answers=s.answers||{};
+  const total=qs.length;
+  const answered=Object.keys(answers).length;
+  const goodCount=qs.filter((q,qi)=>q.good&&answers[qi]===q.good).length;
+  const goodPct=answered?Math.round((goodCount/qs.filter(q=>q.good).length||1)*100):0;
+
+  let html=`<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:4px">
+    <div style="flex:1;min-width:120px;background:var(--g6);border:1px solid var(--g7);border-radius:10px;padding:12px;text-align:center">
+      <div style="font-size:24px;font-weight:700;color:var(--g1);font-family:'Playfair Display',serif">${answered}/${total}</div>
+      <div style="font-size:10.5px;color:var(--muted);margin-top:2px">Questions Answered</div>
+    </div>
+    <div style="flex:1;min-width:120px;background:${goodPct>=70?'var(--g6)':goodPct>=40?'var(--amber-bg)':'var(--red-bg)'};border:1px solid ${goodPct>=70?'var(--g7)':goodPct>=40?'var(--amber-border)':'var(--red-border)'};border-radius:10px;padding:12px;text-align:center">
+      <div style="font-size:24px;font-weight:700;color:${goodPct>=70?'var(--g1)':goodPct>=40?'var(--amber)':'var(--red)'};font-family:'Playfair Display',serif">${goodPct}%</div>
+      <div style="font-size:10.5px;color:var(--muted);margin-top:2px">Good Practice Score</div>
+    </div>
+  </div>`;
+
+  html+=`<div class="rmodal-section-title">Survey Answers — ${weekTitles[s.wi]}</div>`;
+  html+=qs.map((q,qi)=>{
+    const ans=answers[qi];
+    if(!ans)return`<div class="rqa"><div class="rqa-num">${qi+1}</div><div><div class="rqa-q">${q.q}</div><span class="rqa-a neutral">— Not answered</span></div></div>`;
+    const isGood=q.good?ans===q.good:null;
+    const cls=isGood===null?'neutral':isGood?'good':'bad';
+    const icon=isGood===null?'📝':isGood?'✅':'⚠️';
+    return`<div class="rqa"><div class="rqa-num">${qi+1}</div><div style="flex:1"><div class="rqa-q">${q.q}</div><span class="rqa-a ${cls}">${icon} ${ans}</span></div></div>`;
+  }).join('');
+
+  document.getElementById('rmodBody').innerHTML=html;
+
+  // Nav buttons
+  const idx=rmodCurrentIndex;
+  const total2=rmodCurrentIds.length;
+  document.getElementById('rmodNavLabel').textContent=`${idx+1} of ${total2}`;
+  document.getElementById('rmodPrevBtn').disabled=idx===0;
+  document.getElementById('rmodNextBtn').disabled=idx===total2-1;
+}
+
+function rmodNav(dir){
+  const next=rmodCurrentIndex+dir;
+  if(next<0||next>=rmodCurrentIds.length)return;
+  rmodCurrentIndex=next;
+  renderResponseModal(rmodCurrentIds[next]);
+}
+
+function closeResponseModal(e){
+  if(e.target===document.getElementById('responseModal'))
+    document.getElementById('responseModal').style.display='none';
+}
+
+// ══ TOAST ══
+let toastTimer;
+function toast(msg){
+  const el=document.getElementById('toast');
+  el.textContent=msg;el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>el.classList.remove('show'),3200);
+}
+</script>
+</body>
+</html>
